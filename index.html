@@ -343,6 +343,15 @@ tr:hover td { background:var(--surface2); }
           <div class="toggle-row"><span class="toggle-label">Neue Benutzer-Benachrichtigung</span><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
         </div>
         <div class="settings-card">
+          <h3>🔐 Konto & Sicherheit</h3>
+          <div class="security-panel">
+            <div class="form-group"><label>Neuen Benutzernamen (E‑Mail)</label><input type="text" id="new-username" placeholder="Neuer Benutzername"></div>
+            <div class="form-group"><label>Altes Passwort</label><input type="password" id="old-password" placeholder="aktuelles Passwort"></div>
+            <div class="form-group"><label>Neues Passwort</label><input type="password" id="new-password" placeholder="neues Passwort (optional)"></div>
+            <div class="form-group"><label>Neues Passwort wiederholen</label><input type="password" id="confirm-password" placeholder="Wiederholung"></div>
+            <button class="btn btn-primary" onclick="changeAccount()">Änderungen speichern</button>
+          </div>
+        </div>
           <h3>🖥️ Darstellung</h3>
           <div class="toggle-row"><span class="toggle-label">Kompakte Ansicht</span><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
           <div class="toggle-row"><span class="toggle-label">Animationen</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
@@ -594,7 +603,7 @@ tr:hover td { background:var(--surface2); }
       <div class="detail-row"><div class="detail-icon">🏷️</div><div><div class="detail-label">Kategorie</div><div class="detail-val"><span class="badge ${catBadge[ev.category] || 'badge-blue'}">${esc(ev.category)}</span></div></div></div>
       <div class="detail-row" style="flex-direction:column;gap:6px">
         <div style="display:flex;gap:8px;align-items:center"><div class="detail-icon">📝</div><div class="detail-label">Notiz</div></div>
-        <div class="detail-note-box">${ev.note ? esc(ev.note) : '<span style="color:var(--text3);font-style:italic">Keine Notiz</span>'}</div>
+        <div class="detail-note-box" style="white-space:pre-wrap; word-break:break-word;">${ev.note ? esc(ev.note) : '<span style="color:var(--text3);font-style:italic">Keine Notiz</span>'}</div>
       </div>
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal()">Schließen</button>
