@@ -53,6 +53,25 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); min-hei
 .sidebar-logout-btn { display:flex; align-items:center; gap:8px; width:calc(100% - 16px); margin:8px 8px 0; padding:10px 14px; border-radius:var(--radius-sm); border:none; background:rgba(255,101,132,.1); color:var(--accent2); font-family:var(--font); font-size:.88rem; font-weight:600; cursor:pointer; transition:background .15s; }
 .sidebar-logout-btn:hover { background:rgba(255,101,132,.2); }
 .sidebar-logout-btn .icon { font-size:1rem; width:22px; text-align:center; }
+  
+  /* SIDEBAR – jetzt auch mobil scrollbar */
+#sidebar { width:var(--sidebar-w); background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; top:0; left:0; height:100vh; z-index:100; transition:transform .3s; overflow-y:auto; overflow-x:hidden; }
+.sidebar-logo { font-family:var(--font-head); font-size:1.7rem; color:var(--accent); padding:28px 24px 20px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.sidebar-logo span { color:var(--text2); font-size:.75rem; display:block; font-family:var(--font); margin-top:2px; }
+.nav-section { padding:16px 12px 4px; font-size:.68rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text3); }
+.nav-item { display:flex; align-items:center; gap:10px; padding:10px 14px; margin:2px 8px; border-radius:var(--radius-sm); color:var(--text2); cursor:pointer; font-size:.9rem; font-weight:500; transition:background .15s,color .15s; user-select:none; }
+.nav-item:hover { background:var(--surface2); color:var(--text); }
+.nav-item.active { background:var(--accent); color:#fff; }
+.nav-item .icon { font-size:1.1rem; width:22px; text-align:center; }
+.sidebar-bottom { margin-top:auto; padding:12px; border-top:1px solid var(--border); flex-shrink:0; }
+.user-badge { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:var(--radius-sm); background:var(--surface2); }
+.avatar { width:34px; height:34px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.9rem; color:#fff; flex-shrink:0; }
+.user-info { flex:1; min-width:0; }
+.user-name { font-weight:600; font-size:.85rem; color:var(--text); }
+.user-role { font-size:.72rem; color:var(--text3); }
+.sidebar-logout-btn { display:flex; align-items:center; gap:8px; width:calc(100% - 16px); margin:8px 8px 0; padding:10px 14px; border-radius:var(--radius-sm); border:none; background:rgba(255,101,132,.1); color:var(--accent2); font-family:var(--font); font-size:.88rem; font-weight:600; cursor:pointer; transition:background .15s; }
+.sidebar-logout-btn:hover { background:rgba(255,101,132,.2); }
+.sidebar-logout-btn .icon { font-size:1rem; width:22px; text-align:center; }
 
 /* MAIN */
 #main { margin-left:var(--sidebar-w); flex:1; display:flex; flex-direction:column; min-height:100vh; }
