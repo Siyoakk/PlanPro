@@ -831,12 +831,29 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('selected'));
     el.classList.add('selected');
     const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
-    settings.theme = theme;
+     settings.theme = theme;
+    delete settings.accent; // Gespeicherte Akzente löschen
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    // Inline‑Akzente entfernen
+    document.documentElement.style.removeProperty('--accent');
+    document.documentElement.style.removeProperty('--accent2');
+    document.documentElement.style.removeProperty('--accent3');
     toast("🎨 Theme geändert");
+};
   };
   window.setAccent = function(a1, a2, a3, el) {
+    // Theme auf benutzerdefiniert setzen (data-theme entfernen)
+    document.body.removeAttribute('data-theme');
+    document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('selected'));
+    // Akzente direkt setzen
     document.documentElement.style.setProperty('--accent', a1);
     document.documentElement.style.setProperty('--accent2', a2);
     document.documentElement.style.setProperty('--accent3', a3);
     document.querySelectorAll('.accent-swatch').forEach(s => s.classList.remove('selected'));
+    el.classList.add('selected');
+    const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+    settings.theme = null; // kein Theme mehr
+    settings.accent = [a1, a2, a3];
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    toast("🔵 Akzentfarbe geändert (benutzerdefiniert)");
+};
