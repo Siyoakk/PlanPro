@@ -664,7 +664,7 @@ tr:hover td { background:var(--surface2); }
   };
   function showEventModal(ev, isEdit) {
     const catOpts = ['Arbeit','Privat','Meeting','Sonstiges'].map(c => `<option${c===ev.category ? ' selected' : ''}>${c}</option>`).join('');
-    const colorOpts = [['Lila','0'],['Pink','1'],['Türkis','2']].map(([l,v]) => `<option value="${v}"${v==ev.color ? ' selected' : ''}>${l}</option>`).join('');
+    const colorOpts = [['Türkis','0'],['Orange','1'],['Grün','2']].map(([l,v]) => `<option value="${v}"${v==ev.color ? ' selected' : ''}>${l}</option>`).join('');
     document.getElementById('modal-box').innerHTML = `
       <h2>${isEdit ? 'Termin bearbeiten' : 'Neuer Termin'}</h2>
       <div class="form-group"><label>Titel</label><input type="text" id="ev-title" value="${esc(ev.title)}" placeholder="Termintitel"></div>
@@ -674,7 +674,7 @@ tr:hover td { background:var(--surface2); }
       </div>
       <div class="form-row">
         <div class="form-group"><label>Kategorie</label><select id="ev-cat">${catOpts}</select></div>
-        <div class="form-group"><label>Farbe</label><select id="ev-color">${colorOpts}</select></div>
+        <div class="form-group"><label>Farbe</label><select id="ev-color">c</select></div>
       </div>
       <div class="form-group"><label>Notiz</label><textarea id="ev-note" rows="3">${esc(ev.note || '')}</textarea></div>
       <div class="modal-actions">
