@@ -653,8 +653,8 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
   };
 
   // ---------- NAVIGATION ----------
-  const pageTitles = { dashboard:'Dashboard', calendar:'Kalender', bookings:'Alle Buchungen', users:'Benutzerverwaltung', settings:'Einstellungen' };
-  const navOrder = ['dashboard','calendar','bookings','users','settings'];
+  const pageTitles = { dashboard:'Dashboard', calendar:'Kalender',  newtermin:'+ Neuer Termin', bookings:'Alle Buchungen', users:'Benutzerverwaltung', settings:'Einstellungen' };
+  const navOrder = ['dashboard','calendar','newtermin','bookings','users','settings'];
   window.navigate = function(page) {
     currentPage = page;
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
