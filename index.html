@@ -19,19 +19,13 @@
 [data-theme="forest"] { --bg:#0c1f0e; --surface:#152818; --surface2:#1d3620; --border:#2a4a2e; --accent:#5cdb95; --accent2:#f7b731; --accent3:#74b9ff; --text:#d8f5dc; --text2:#7ab87e; --text3:#3a6a3e; }
 * { box-sizing:border-box; margin:0; padding:0; }
 body { background:var(--bg); color:var(--text); font-family:var(--font); min-height:100vh; transition:background .3s,color .3s; }
-
-/* Kompakte Ansicht */
 body.compact .page { padding:16px !important; }
 body.compact .stat-card { padding:12px 16px !important; }
 body.compact .event-card { padding:12px 14px !important; }
 body.compact .topbar { padding:10px 20px !important; }
-
-/* Animationen ausschalten */
 body.no-animations .page { animation:none !important; }
 body.no-animations .modal { animation:none !important; }
 body.no-animations .btn { transition:none !important; }
-
-/* LOGIN */
 #login-screen { min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--bg); background-image:radial-gradient(ellipse at 20% 50%,rgba(108,99,255,.18) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(255,101,132,.12) 0%,transparent 50%); }
 .login-box { background:var(--surface); border:1px solid var(--border); border-radius:24px; padding:48px 40px; width:100%; max-width:420px; box-shadow:var(--shadow); }
 .login-logo { font-family:var(--font-head); font-size:2.4rem; color:var(--accent); margin-bottom:6px; }
@@ -42,11 +36,7 @@ body.no-animations .btn { transition:none !important; }
 .login-btn { width:100%; background:var(--accent); border:none; border-radius:var(--radius-sm); padding:13px; color:#fff; font-family:var(--font); font-size:1rem; font-weight:600; cursor:pointer; transition:opacity .2s,transform .1s; }
 .login-btn:hover { opacity:.9; } .login-btn:active { transform:scale(.98); }
 .login-err { color:var(--accent2); font-size:.85rem; margin-top:-12px; margin-bottom:12px; display:none; }
-
-/* APP */
 #app { display:none; flex-direction:row; min-height:100vh; }
-
-/* SIDEBAR */
 #sidebar { width:var(--sidebar-w); background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; top:0; left:0; height:100vh; z-index:100; transition:transform .3s; overflow-y:auto; overflow-x:hidden; }
 .sidebar-logo { font-family:var(--font-head); font-size:1.7rem; color:var(--accent); padding:28px 24px 20px; border-bottom:1px solid var(--border); flex-shrink:0; }
 .sidebar-logo span { color:var(--text2); font-size:.75rem; display:block; font-family:var(--font); margin-top:2px; }
@@ -64,8 +54,6 @@ body.no-animations .btn { transition:none !important; }
 .sidebar-logout-btn { display:flex; align-items:center; gap:8px; width:calc(100% - 16px); margin:8px 8px 0; padding:10px 14px; border-radius:var(--radius-sm); border:none; background:rgba(255,101,132,.1); color:var(--accent2); font-family:var(--font); font-size:.88rem; font-weight:600; cursor:pointer; transition:background .15s; }
 .sidebar-logout-btn:hover { background:rgba(255,101,132,.2); }
 .sidebar-logout-btn .icon { font-size:1rem; width:22px; text-align:center; }
-
-/* MAIN */
 #main { margin-left:var(--sidebar-w); flex:1; display:flex; flex-direction:column; min-height:100vh; }
 .topbar { display:flex; align-items:center; padding:18px 32px; border-bottom:1px solid var(--border); background:var(--surface); position:sticky; top:0; z-index:50; gap:12px; }
 .topbar-title { font-family:var(--font-head); font-size:1.5rem; flex:1; }
@@ -76,12 +64,9 @@ body.no-animations .btn { transition:none !important; }
 .btn-ghost { background:var(--surface2); color:var(--text); border:1px solid var(--border); } .btn-ghost:hover { background:var(--border); }
 .btn-danger { background:#ff4057; color:#fff; } .btn-danger:hover { opacity:.88; }
 .hamburger { display:none; background:none; border:none; color:var(--text); font-size:1.4rem; cursor:pointer; padding:4px; }
-
 .page { display:none; padding:32px; flex:1; animation:fadeIn .25s ease; }
 .page.active { display:block; }
 @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-
-/* DASHBOARD */
 .dash-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:28px; }
 .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:22px 20px; position:relative; overflow:hidden; }
 .stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--accent); }
@@ -102,16 +87,8 @@ body.no-animations .btn { transition:none !important; }
 .event-time { font-size:.82rem; font-weight:600; color:var(--accent); white-space:nowrap; }
 .empty-state { text-align:center; padding:48px 20px; color:var(--text3); font-size:.9rem; }
 .empty-state .ico { font-size:2.5rem; margin-bottom:12px; }
-.event-card.completed, .cal-event-pill.completed, tr.completed td {
-  opacity: 0.6;
-  filter: grayscale(0.3);
-  text-decoration: line-through;
-}
-.event-card.completed .event-title, tr.completed td:first-child {
-  text-decoration: line-through;
-}
-
-/* CALENDAR */
+.event-card.completed, .cal-event-pill.completed, tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-through; }
+.event-card.completed .event-title, tr.completed td:first-child { text-decoration:line-through; }
 .cal-header { display:flex; align-items:center; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
 .cal-header h2 { font-family:var(--font-head); font-size:1.4rem; flex:1; text-align:center; min-width:130px; }
 .cal-date-jump { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:7px 10px; color:var(--text); font-family:var(--font); font-size:.82rem; cursor:pointer; outline:none; transition:border-color .2s; }
@@ -128,8 +105,6 @@ body.no-animations .btn { transition:none !important; }
 .cal-event-pill:hover { opacity:.75; }
 .cal-event-pill.c2 { background:var(--accent2); }
 .cal-event-pill.c3 { background:var(--accent3); color:#1a1a2e; }
-
-/* EVENT DETAIL */
 .event-detail-header { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
 .event-detail-dot { width:14px; height:14px; border-radius:50%; background:var(--accent); flex-shrink:0; }
 .event-detail-dot.c2 { background:var(--accent2); } .event-detail-dot.c3 { background:var(--accent3); }
@@ -138,8 +113,6 @@ body.no-animations .btn { transition:none !important; }
 .detail-label { font-size:.72rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--text3); margin-bottom:3px; }
 .detail-val { font-size:.92rem; color:var(--text); }
 .detail-note-box { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; font-size:.88rem; color:var(--text2); min-height:60px; white-space:pre-wrap; word-break:break-word; line-height:1.5; }
-
-/* BOOKINGS */
 .filter-bar { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
 .filter-chip { padding:6px 14px; border-radius:99px; border:1px solid var(--border); background:var(--surface); color:var(--text2); font-size:.82rem; font-weight:500; cursor:pointer; transition:background .15s,color .15s; }
 .filter-chip.active { background:var(--accent); border-color:var(--accent); color:#fff; }
@@ -156,8 +129,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
 .badge-blue { background:rgba(108,99,255,.18); color:var(--accent); }
 .badge-pink { background:rgba(255,101,132,.18); color:var(--accent2); }
 .badge-green { background:rgba(67,232,216,.18); color:var(--accent3); }
-
-/* MODAL */
 #modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; z-index:500; padding:16px; backdrop-filter:blur(4px); }
 #modal-overlay.open { display:flex; }
 .modal { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:32px; width:100%; max-width:520px; box-shadow:var(--shadow); animation:slideUp .22s ease; max-height:90vh; overflow-y:auto; }
@@ -171,8 +142,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
 .form-group select option { background:var(--surface); }
 .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:24px; flex-wrap:wrap; }
-
-/* SETTINGS */
 .settings-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px; }
 .settings-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:24px; }
 .settings-card h3 { font-weight:600; font-size:1rem; margin-bottom:18px; display:flex; align-items:center; gap:8px; }
@@ -191,8 +160,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
 .toggle.on { background:var(--accent); }
 .toggle::after { content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; transition:transform .2s; }
 .toggle.on::after { transform:translateX(18px); }
-
-/* USERS */
 .user-cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; }
 .user-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; text-align:center; transition:border-color .15s; }
 .user-card:hover { border-color:var(--accent); }
@@ -200,8 +167,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
 .user-card .u-name { font-weight:600; font-size:.95rem; }
 .user-card .u-role { font-size:.78rem; color:var(--text2); margin-top:3px; margin-bottom:12px; }
 .user-card .u-actions { display:flex; gap:8px; justify-content:center; }
-
-/* MOBILE */
 #sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:99; }
 @media (max-width:768px) {
   :root { --sidebar-w:270px; }
@@ -235,7 +200,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
   .dash-grid { grid-template-columns:1fr; }
   .user-cards { grid-template-columns:1fr; }
 }
-
 #toast { position:fixed; bottom:28px; right:28px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 18px; font-size:.88rem; font-weight:500; box-shadow:var(--shadow); z-index:9999; transform:translateY(20px); opacity:0; transition:all .25s; pointer-events:none; max-width:280px; }
 #toast.show { transform:translateY(0); opacity:1; }
 ::-webkit-scrollbar { width:6px; height:6px; }
@@ -244,7 +208,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
 </style>
 </head>
 <body>
-
 <div id="login-screen">
   <div class="login-box">
     <div class="login-logo">SiyoPlan</div>
@@ -256,22 +219,20 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     <button class="btn btn-ghost" onclick="doRegister()" style="margin-top:12px; width:100%">🔐 Neuen Account erstellen</button>
   </div>
 </div>
-
 <div id="sidebar-overlay" onclick="closeSidebar()"></div>
 <div id="sync-badge" style="display:none"></div>
-
 <div id="app">
   <nav id="sidebar">
     <div class="sidebar-logo">SiyoPlan <span id="sb-user-label"></span></div>
     <div class="nav-section">Übersicht</div>
-    <div class="nav-item active" onclick="navigate('dashboard')"><span class="icon">📊</span> Dashboard</div>
+    <div class="nav-item" data-page="dashboard" onclick="navigate('dashboard')"><span class="icon">📊</span> Dashboard</div>
     <div class="nav-section">Kalender</div>
-    <div class="nav-item" onclick="navigate('calendar')"><span class="icon">📅</span> Kalender</div>
-    <div class="nav-item" onclick="navigate('bookings')"><span class="icon">📋</span> Alle Buchungen</div>
-    <div class="nav-item" onclick="openNewEventModal()"><span class="icon">➕</span> Neuer Termin</div>
+    <div class="nav-item" data-page="calendar" onclick="navigate('calendar')"><span class="icon">📅</span> Kalender</div>
+    <div class="nav-item" data-page="bookings" onclick="navigate('bookings')"><span class="icon">📋</span> Alle Buchungen</div>
+    <div class="nav-item" data-page="" onclick="openNewEventModal()"><span class="icon">➕</span> Neuer Termin</div>
     <div class="nav-section">Verwaltung</div>
-    <div class="nav-item" id="nav-users" onclick="navigate('users')"><span class="icon">👥</span> Benutzer</div>
-    <div class="nav-item" onclick="navigate('settings')"><span class="icon">⚙️</span> Einstellungen</div>
+    <div class="nav-item" data-page="users" onclick="navigate('users')"><span class="icon">👥</span> Benutzer</div>
+    <div class="nav-item" data-page="settings" onclick="navigate('settings')"><span class="icon">⚙️</span> Einstellungen</div>
     <div class="sidebar-bottom">
       <div class="user-badge">
         <div class="avatar" id="sb-avatar">?</div>
@@ -283,7 +244,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       <button class="sidebar-logout-btn" onclick="doLogout()"><span class="icon">⏏️</span> Abmelden</button>
     </div>
   </nav>
-
   <div id="main">
     <div class="topbar">
       <button class="hamburger" onclick="openSidebar()">☰</button>
@@ -291,7 +251,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       <div class="topbar-date" id="topbar-date"></div>
       <button class="btn btn-primary" onclick="openNewEventModal()">＋ Termin</button>
     </div>
-
     <div class="page active" id="page-dashboard">
       <div class="dash-grid">
         <div class="stat-card"><div class="stat-label">Heute</div><div class="stat-val" id="stat-today">0</div><div class="stat-sub">Termine heute</div></div>
@@ -301,7 +260,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       <div class="section-head"><h2>Heutige Termine</h2></div>
       <div class="event-list" id="today-events"></div>
     </div>
-
     <div class="page" id="page-calendar">
       <div class="cal-header">
         <button class="btn btn-ghost" onclick="calPrev()">‹</button>
@@ -312,7 +270,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       </div>
       <div class="cal-grid" id="cal-grid"></div>
     </div>
-
     <div class="page" id="page-bookings">
       <div class="filter-bar">
         <div class="filter-chip active" onclick="setFilter('all',this)">Alle</div>
@@ -324,20 +281,12 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       <div class="table-wrap">
         <table>
           <thead>
-            <tr>
-              <th onclick="sortBookings('title')">Titel</th>
-              <th onclick="sortBookings('date')">Datum</th>
-              <th onclick="sortBookings('time')">Zeit</th>
-              <th onclick="sortBookings('category')">Kategorie</th>
-              <th class="hide-mobile" onclick="sortBookings('note')">Notiz</th>
-              <th>Aktionen</th>
-            </tr>
+            <tr><th onclick="sortBookings('title')">Titel</th><th onclick="sortBookings('date')">Datum</th><th onclick="sortBookings('time')">Zeit</th><th onclick="sortBookings('category')">Kategorie</th><th class="hide-mobile" onclick="sortBookings('note')">Notiz</th><th>Aktionen</th></tr>
           </thead>
           <tbody id="bookings-tbody"></tbody>
         </table>
       </div>
     </div>
-
     <div class="page" id="page-users">
       <div class="section-head">
         <h2>Benutzerverwaltung</h2>
@@ -345,10 +294,8 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       </div>
       <div class="user-cards" id="user-cards"></div>
     </div>
-
     <div class="page" id="page-settings">
       <div class="settings-grid">
-        <!-- Theme & Akzent -->
         <div class="settings-card">
           <h3>🎨 Farbthema</h3>
           <div class="theme-picker">
@@ -366,24 +313,18 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
             <div class="accent-swatch" style="background:#00bcd4" onclick="setAccent('#00bcd4','#ff5722','#a0f080',this)"></div>
           </div>
         </div>
-
-        <!-- Benachrichtigungen (Toggles) -->
         <div class="settings-card">
           <h3>🔔 Benachrichtigungen</h3>
           <div class="toggle-row"><span class="toggle-label">Terminerinnerungen</span><div class="toggle" id="toggle-notify-reminder" onclick="toggleSetting('notify_reminder', this)"></div></div>
           <div class="toggle-row"><span class="toggle-label">Dashboard-Zusammenfassung</span><div class="toggle" id="toggle-dashboard-summary" onclick="toggleSetting('dashboard_summary', this)"></div></div>
           <div class="toggle-row"><span class="toggle-label">Neue Benutzer-Benachrichtigung</span><div class="toggle" id="toggle-new-user" onclick="toggleSetting('new_user_notify', this)"></div></div>
         </div>
-
-        <!-- Darstellung -->
         <div class="settings-card">
           <h3>🖥️ Darstellung</h3>
           <div class="toggle-row"><span class="toggle-label">Kompakte Ansicht</span><div class="toggle" id="toggle-compact" onclick="toggleSetting('compact_view', this)"></div></div>
           <div class="toggle-row"><span class="toggle-label">Animationen</span><div class="toggle" id="toggle-animations" onclick="toggleSetting('animations', this)"></div></div>
           <div class="toggle-row"><span class="toggle-label">Kalender: Wochennummern</span><div class="toggle" id="toggle-weeknumbers" onclick="toggleSetting('week_numbers', this)"></div></div>
         </div>
-
-        <!-- Konto & Sicherheit -->
         <div class="settings-card">
           <h3>🔐 Konto & Sicherheit</h3>
           <div class="security-panel">
@@ -394,16 +335,12 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
             <button class="btn btn-primary" onclick="changeAccount()">Änderungen speichern</button>
           </div>
         </div>
-
-        <!-- Mein Profil (lokal) -->
         <div class="settings-card">
           <h3>👤 Mein Profil</h3>
           <div class="form-group"><label>Anzeigename</label><input type="text" id="profile-name" placeholder="Name"></div>
           <div class="form-group"><label>E-Mail</label><input type="email" id="profile-email" placeholder="deine@email.de"></div>
           <button class="btn btn-primary" onclick="saveProfile()">Speichern</button>
         </div>
-
-        <!-- Daten -->
         <div class="settings-card">
           <h3>🗑️ Daten</h3>
           <p style="color:var(--text2);font-size:.85rem;margin-bottom:14px">Alle eigenen Termine exportieren oder komplett löschen.</p>
@@ -416,7 +353,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     </div>
   </div>
 </div>
-
 <div id="modal-overlay"><div class="modal" id="modal-box"></div></div>
 <div id="toast"></div>
 
@@ -435,7 +371,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     appId: "1:540852603323:web:070805fd4a33dbf9469c9e",
     measurementId: "G-T4YGD7GVB1"
   };
-
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const auth = getAuth(app);
@@ -446,7 +381,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
   window.deleteDoc = deleteDoc;
   window.doc = doc;
 
-  // ---------- GLOBALE STATE ----------
   let currentUser = null;
   let calDate = new Date();
   let bookingFilter = 'all';
@@ -458,7 +392,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
   let sortDirection = 'asc';
   const SETTINGS_KEY = 'planpro_settings';
 
-  // ---------- HILFSFUNKTIONEN ----------
   function toast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -486,7 +419,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
   window.closeSidebar = closeSidebar;
   window.openSidebar = openSidebar;
 
-  // ---------- LOGIN / REGISTER ----------
   window.doLogin = async function() {
     const username = document.getElementById('login-user').value.trim();
     const password = document.getElementById('login-pass').value;
@@ -517,7 +449,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     closeModal();
   };
 
-  // ---------- PASSWORT / E-MAIL ÄNDERN ----------
   window.changeAccount = async function() {
     const newUsername = document.getElementById('new-username').value.trim();
     const oldPwd = document.getElementById('old-password').value;
@@ -527,7 +458,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     if (newPwd !== confirmPwd) { toast("Neue Passwörter stimmen nicht überein"); return; }
     const user = auth.currentUser;
     if (!user) { toast("Nicht angemeldet"); return; }
-
     const credential = EmailAuthProvider.credential(user.email, oldPwd);
     try {
       await reauthenticateWithCredential(user, credential);
@@ -554,7 +484,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     }
   };
 
-  // ---------- PROFIL (lokal) ----------
   window.saveProfile = function() {
     const displayName = document.getElementById('profile-name').value.trim();
     const email = document.getElementById('profile-email').value.trim();
@@ -564,14 +493,12 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     toast("✅ Profil gespeichert (lokal)");
   };
 
-  // ---------- TOGGLE EINSTELLUNGEN (Benachrichtigungen & Darstellung) ----------
   window.toggleSetting = function(key, toggleEl) {
     let settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
     if (!settings.ui) settings.ui = {};
     settings.ui[key] = !settings.ui[key];
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     applyUISettings();
-    // Toggle Klasse aktualisieren
     if (settings.ui[key]) toggleEl.classList.add('on');
     else toggleEl.classList.remove('on');
     toast(`Einstellung gespeichert: ${key}`);
@@ -580,14 +507,10 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
   function applyUISettings() {
     const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
     const ui = settings.ui || {};
-    // Kompakte Ansicht
     if (ui.compact_view) document.body.classList.add('compact');
     else document.body.classList.remove('compact');
-    // Animationen
     if (ui.animations === false) document.body.classList.add('no-animations');
     else document.body.classList.remove('no-animations');
-    // Wochennummern (Platzhalter – aktuell kein Feature)
-    // Toggle-Stände aktualisieren
     const toggleReminder = document.getElementById('toggle-notify-reminder');
     const toggleSummary = document.getElementById('toggle-dashboard-summary');
     const toggleNewUser = document.getElementById('toggle-new-user');
@@ -602,7 +525,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     if (toggleWeek) ui.week_numbers ? toggleWeek.classList.add('on') : toggleWeek.classList.remove('on');
   }
 
-  // ---------- APP ANZEIGEN ----------
   function showLogin() {
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('app').style.display = 'none';
@@ -614,7 +536,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     document.getElementById('sb-name').textContent = displayName;
     document.getElementById('sb-avatar').textContent = displayName.slice(0,2).toUpperCase();
     document.getElementById('sb-user-label').textContent = 'Angemeldet als ' + displayName;
-    // Profil laden
     const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
     if (settings.profile) {
       document.getElementById('profile-name').value = settings.profile.displayName || displayName;
@@ -626,13 +547,12 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     const navUsers = document.getElementById('nav-users');
     if (currentUser.role === 'admin') navUsers.style.display = 'flex';
     else navUsers.style.display = 'none';
-    applySettings(); // Theme & Akzent aus localStorage
+    applySettings();
     applyUISettings();
     document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('de-DE', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
     navigate('dashboard');
   }
 
-  // ---------- ECHTZEIT-LISTENER ----------
   function startEventsListener() {
     if (eventsUnsubscribe) eventsUnsubscribe();
     if (!currentUser || !currentUser.uid) return;
@@ -645,23 +565,27 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     });
   }
 
-  // ---------- SORTIERUNG ----------
   window.sortBookings = function(field) {
     if (sortField === field) sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
     else { sortField = field; sortDirection = 'asc'; }
     renderBookings();
   };
 
-  // ---------- NAVIGATION ----------
   const pageTitles = { dashboard:'Dashboard', calendar:'Kalender', bookings:'Alle Buchungen', users:'Benutzerverwaltung', settings:'Einstellungen' };
-  const navOrder = ['dashboard','calendar','bookings','users','settings'];
   window.navigate = function(page) {
     currentPage = page;
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById('page-'+page).classList.add('active');
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    const idx = navOrder.indexOf(page);
-    if (idx >= 0) document.querySelectorAll('.nav-item')[idx].classList.add('active');
+    const activePage = document.getElementById('page-'+page);
+    if (activePage) activePage.classList.add('active');
+    // Sidebar Markierung über data-page Attribute
+    document.querySelectorAll('.nav-item').forEach(nav => {
+      const targetPage = nav.getAttribute('data-page');
+      if (targetPage && targetPage === page) {
+        nav.classList.add('active');
+      } else {
+        nav.classList.remove('active');
+      }
+    });
     document.getElementById('page-title').textContent = pageTitles[page] || page;
     closeSidebar();
     if (page === 'dashboard') renderDashboard();
@@ -670,7 +594,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     if (page === 'users')     renderUsers();
   };
 
-  // ---------- DASHBOARD ----------
   function renderDashboard() {
     const td = todayStr();
     const [wS, wE] = weekRange();
@@ -692,7 +615,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     }
   }
 
-  // ---------- KALENDER ----------
   function renderCalendar() {
     const y = calDate.getFullYear(), m = calDate.getMonth();
     document.getElementById('cal-month-label').textContent = new Date(y,m,1).toLocaleDateString('de-DE',{month:'long',year:'numeric'});
@@ -727,7 +649,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
   window.calToday = function() { calDate = new Date(); renderCalendar(); };
   window.calClick = function(ds) { openNewEventModal(ds); };
 
-  // ---------- EVENT MODAL & TOGGLE COMPLETED ----------
   window.toggleCompleted = async function(id) {
     const ev = events.find(e => e.id === id);
     if (!ev) return;
@@ -825,7 +746,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     toast("🗑️ Gelöscht");
   };
 
-  // ---------- BUCHUNGEN ----------
   window.setFilter = function(f, el) {
     bookingFilter = f;
     document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
@@ -868,7 +788,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     }
   }
 
-  // ---------- BENUTZERVERWALTUNG (ADMIN) ----------
   async function renderUsers() {
     if (currentUser.role !== 'admin') return;
     const usersSnapshot = await getDocs(collection(db, "users"));
@@ -907,7 +826,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     toast('Neue Benutzer nur über Firebase Authentication (Console) oder Registration möglich.');
   };
 
-  // ---------- THEME & AKZENT (aus localStorage) ----------
   window.setTheme = function(theme, el) {
     document.body.setAttribute('data-theme', theme === 'dark' ? '' : theme);
     document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('selected'));
@@ -922,54 +840,3 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     document.documentElement.style.setProperty('--accent2', a2);
     document.documentElement.style.setProperty('--accent3', a3);
     document.querySelectorAll('.accent-swatch').forEach(s => s.classList.remove('selected'));
-    el.classList.add('selected');
-    const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
-    settings.accent = [a1, a2, a3];
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-    toast("🔵 Akzentfarbe geändert");
-  };
-  function applySettings() {
-    const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
-    if (settings.theme) document.body.setAttribute('data-theme', settings.theme === 'dark' ? '' : settings.theme);
-    if (settings.accent) {
-      document.documentElement.style.setProperty('--accent', settings.accent[0]);
-      document.documentElement.style.setProperty('--accent2', settings.accent[1]);
-      document.documentElement.style.setProperty('--accent3', settings.accent[2]);
-    }
-  }
-
-  window.exportData = function() {
-    const data = { events: events, exported: new Date().toISOString() };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'planpro_export.json';
-    a.click();
-    toast("📥 Exportiert");
-  };
-  window.clearData = async function() {
-    if (!confirm("Wirklich ALLE deine Termine unwiderruflich löschen?")) return;
-    for (const ev of events) {
-      await deleteDoc(doc(db, "events", ev.id));
-    }
-    toast("🗑️ Alle Termine gelöscht");
-  };
-
-  // ---------- AUTH STATUS ----------
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      currentUser = { uid: user.uid, email: user.email, username: user.email.split('@')[0], role: 'user' };
-      try {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists() && userDoc.data().role === 'admin') currentUser.role = 'admin';
-      } catch (err) { console.warn(err); }
-      showApp();
-      startEventsListener();
-    } else {
-      if (eventsUnsubscribe) eventsUnsubscribe();
-      showLogin();
-    }
-  });
-</script>
-</body>
-</html>
