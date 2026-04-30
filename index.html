@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlanPro – Synchronisiert</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f0f13; --surface: #18181f; --surface2: #22222d; --border: #2e2e3d;
+  --accent: #6c63ff; --accent2: #ff6584; --accent3: #43e8d8;
+  --text: #e8e8f0; --text2: #9090a8; --text3: #5a5a72;
+  --radius: 14px; --radius-sm: 8px;
+  --font-head: 'DM Serif Display', serif; --font: 'DM Sans', sans-serif;
+  --sidebar-w: 240px; --shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+[data-theme="light"]  { --bg:#f0f0f7; --surface:#fff; --surface2:#f5f5fc; --border:#dddde8; --text:#1a1a2e; --text2:#5a5a78; --text3:#9090a8; --shadow:0 8px 32px rgba(108,99,255,.10); }
+[data-theme="ocean"]  { --bg:#071a2c; --surface:#0d2640; --surface2:#123356; --border:#1e4a70; --accent:#00c9ff; --accent2:#ff9a56; --accent3:#a0f0b0; --text:#d8f0ff; --text2:#7ab0cc; --text3:#3a6a88; }
+[data-theme="forest"] { --bg:#0c1f0e; --surface:#152818; --surface2:#1d3620; --border:#2a4a2e; --accent:#5cdb95; --accent2:#f7b731; --accent3:#74b9ff; --text:#d8f5dc; --text2:#7ab87e; --text3:#3a6a3e; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); color:var(--text); font-family:var(--font); min-height:100vh; transition:background .3s,color .3s; }
+
+/* LOGIN */
+#login-screen { min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--bg); background-image:radial-gradient(ellipse at 20% 50%,rgba(108,99,255,.18) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(255,101,132,.12) 0%,transparent 50%); }
+.login-box { background:var(--surface); border:1px solid var(--border); border-radius:24px; padding:48px 40px; width:100%; max-width:420px; box-shadow:var(--shadow); }
+.login-logo { font-family:var(--font-head); font-size:2.4rem; color:var(--accent); margin-bottom:6px; }
+.login-sub { color:var(--text2); font-size:.9rem; margin-bottom:32px; }
+.login-box label { display:block; font-size:.78rem; font-weight:600; letter-spacing:.08em; color:var(--text2); text-transform:uppercase; margin-bottom:6px; }
+.login-box input { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; color:var(--text); font-family:var(--font); font-size:.95rem; outline:none; transition:border-color .2s; margin-bottom:18px; }
+.login-box input:focus { border-color:var(--accent); }
+.login-btn { width:100%; background:var(--accent); border:none; border-radius:var(--radius-sm); padding:13px; color:#fff; font-family:var(--font); font-size:1rem; font-weight:600; cursor:pointer; transition:opacity .2s,transform .1s; }
+.login-btn:hover { opacity:.9; } .login-btn:active { transform:scale(.98); }
+.login-err { color:var(--accent2); font-size:.85rem; margin-top:-12px; margin-bottom:12px; display:none; }
+
+/* APP */
+#app { display:none; flex-direction:row; min-height:100vh; }
+
+/* SIDEBAR */
+#sidebar { width:var(--sidebar-w); background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; top:0; left:0; height:100vh; z-index:100; transition:transform .3s; overflow-y:auto; }
+.sidebar-logo { font-family:var(--font-head); font-size:1.7rem; color:var(--accent); padding:28px 24px 20px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.sidebar-logo span { color:var(--text2); font-size:.75rem; display:block; font-family:var(--font); margin-top:2px; }
+.nav-section { padding:16px 12px 4px; font-size:.68rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text3); }
+.nav-item { display:flex; align-items:center; gap:10px; padding:10px 14px; margin:2px 8px; border-radius:var(--radius-sm); color:var(--text2); cursor:pointer; font-size:.9rem; font-weight:500; transition:background .15s,color .15s; user-select:none; }
+.nav-item:hover { background:var(--surface2); color:var(--text); }
+.nav-item.active { background:var(--accent); color:#fff; }
+.nav-item .icon { font-size:1.1rem; width:22px; text-align:center; }
+.sidebar-bottom { margin-top:auto; padding:12px; border-top:1px solid var(--border); flex-shrink:0; }
+.user-badge { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:var(--radius-sm); background:var(--surface2); }
+.avatar { width:34px; height:34px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.9rem; color:#fff; flex-shrink:0; }
+.user-info { flex:1; min-width:0; }
+.user-name { font-weight:600; font-size:.85rem; color:var(--text); }
+.user-role { font-size:.72rem; color:var(--text3); }
+.sidebar-logout-btn { display:flex; align-items:center; gap:8px; width:calc(100% - 16px); margin:8px 8px 0; padding:10px 14px; border-radius:var(--radius-sm); border:none; background:rgba(255,101,132,.1); color:var(--accent2); font-family:var(--font); font-size:.88rem; font-weight:600; cursor:pointer; transition:background .15s; }
+.sidebar-logout-btn:hover { background:rgba(255,101,132,.2); }
+.sidebar-logout-btn .icon { font-size:1rem; width:22px; text-align:center; }
+
+/* MAIN */
+#main { margin-left:var(--sidebar-w); flex:1; display:flex; flex-direction:column; min-height:100vh; }
+.topbar { display:flex; align-items:center; padding:18px 32px; border-bottom:1px solid var(--border); background:var(--surface); position:sticky; top:0; z-index:50; gap:12px; }
+.topbar-title { font-family:var(--font-head); font-size:1.5rem; flex:1; }
+.topbar-date { color:var(--text2); font-size:.85rem; white-space:nowrap; }
+.topbar-logout { display:flex; align-items:center; gap:6px; padding:8px 14px; border-radius:var(--radius-sm); border:1px solid rgba(255,101,132,.35); background:rgba(255,101,132,.08); color:var(--accent2); cursor:pointer; font-family:var(--font); font-size:.82rem; font-weight:600; transition:background .15s; white-space:nowrap; }
+.topbar-logout:hover { background:rgba(255,101,132,.2); }
+.btn { display:inline-flex; align-items:center; gap:6px; padding:9px 18px; border-radius:var(--radius-sm); border:none; font-family:var(--font); font-size:.88rem; font-weight:600; cursor:pointer; transition:opacity .15s,transform .1s; }
+.btn:active { transform:scale(.97); }
+.btn-primary { background:var(--accent); color:#fff; } .btn-primary:hover { opacity:.88; }
+.btn-ghost { background:var(--surface2); color:var(--text); border:1px solid var(--border); } .btn-ghost:hover { background:var(--border); }
+.btn-danger { background:#ff4057; color:#fff; } .btn-danger:hover { opacity:.88; }
+.hamburger { display:none; background:none; border:none; color:var(--text); font-size:1.4rem; cursor:pointer; padding:4px; }
+
+.page { display:none; padding:32px; flex:1; animation:fadeIn .25s ease; }
+.page.active { display:block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+/* DASHBOARD */
+.dash-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:28px; }
+.stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:22px 20px; position:relative; overflow:hidden; }
+.stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--accent); }
+.stat-card.c2::before { background:var(--accent2); } .stat-card.c3::before { background:var(--accent3); }
+.stat-label { font-size:.75rem; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:var(--text2); margin-bottom:8px; }
+.stat-val { font-family:var(--font-head); font-size:2.2rem; color:var(--text); }
+.stat-sub { color:var(--text3); font-size:.8rem; margin-top:4px; }
+.section-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.section-head h2 { font-family:var(--font-head); font-size:1.25rem; }
+.event-list { display:flex; flex-direction:column; gap:10px; }
+.event-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; display:flex; align-items:center; gap:14px; cursor:pointer; transition:border-color .15s; }
+.event-card:hover { border-color:var(--accent); }
+.event-dot { width:10px; height:10px; border-radius:50%; background:var(--accent); flex-shrink:0; }
+.event-dot.c2 { background:var(--accent2); } .event-dot.c3 { background:var(--accent3); }
+.event-info { flex:1; min-width:0; }
+.event-title { font-weight:600; font-size:.92rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.event-meta { font-size:.78rem; color:var(--text2); margin-top:2px; }
+.event-time { font-size:.82rem; font-weight:600; color:var(--accent); white-space:nowrap; }
+.empty-state { text-align:center; padding:48px 20px; color:var(--text3); font-size:.9rem; }
+.empty-state .ico { font-size:2.5rem; margin-bottom:12px; }
+
+/* CALENDAR */
+.cal-header { display:flex; align-items:center; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+.cal-header h2 { font-family:var(--font-head); font-size:1.4rem; flex:1; text-align:center; min-width:130px; }
+.cal-date-jump { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:7px 10px; color:var(--text); font-family:var(--font); font-size:.82rem; cursor:pointer; outline:none; transition:border-color .2s; }
+.cal-date-jump:focus { border-color:var(--accent); }
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+.cal-day-name { text-align:center; font-size:.72rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--text3); padding:8px 0; }
+.cal-cell { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); min-height:80px; padding:8px 6px; cursor:pointer; transition:border-color .15s,background .15s; position:relative; overflow:hidden; }
+.cal-cell:hover { border-color:var(--accent); background:var(--surface2); }
+.cal-cell.today { border-color:var(--accent); border-width:2px; }
+.cal-cell.other-month { opacity:.4; }
+.cal-cell .day-num { font-size:.82rem; font-weight:600; color:var(--text2); margin-bottom:4px; }
+.cal-cell.today .day-num { color:var(--accent); font-weight:700; }
+.cal-event-pill { background:var(--accent); border-radius:4px; padding:2px 5px; font-size:.68rem; color:#fff; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500; cursor:pointer; transition:opacity .15s; display:block; }
+.cal-event-pill:hover { opacity:.75; }
+.cal-event-pill.c2 { background:var(--accent2); }
+.cal-event-pill.c3 { background:var(--accent3); color:#1a1a2e; }
+
+/* EVENT DETAIL */
+.event-detail-header { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+.event-detail-dot { width:14px; height:14px; border-radius:50%; background:var(--accent); flex-shrink:0; }
+.event-detail-dot.c2 { background:var(--accent2); } .event-detail-dot.c3 { background:var(--accent3); }
+.detail-row { display:flex; gap:10px; margin-bottom:14px; align-items:flex-start; }
+.detail-icon { font-size:1rem; width:22px; flex-shrink:0; margin-top:2px; }
+.detail-label { font-size:.72rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--text3); margin-bottom:3px; }
+.detail-val { font-size:.92rem; color:var(--text); }
+.detail-note-box { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; font-size:.88rem; color:var(--text2); min-height:52px; white-space:pre-wrap; line-height:1.5; }
+
+/* BOOKINGS */
+.filter-bar { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+.filter-chip { padding:6px 14px; border-radius:99px; border:1px solid var(--border); background:var(--surface); color:var(--text2); font-size:.82rem; font-weight:500; cursor:pointer; transition:background .15s,color .15s; }
+.filter-chip.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+.table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+table { width:100%; border-collapse:collapse; }
+thead { background:var(--surface2); }
+th { padding:12px 16px; text-align:left; font-size:.75rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--text2); border-bottom:1px solid var(--border); }
+td { padding:13px 16px; border-bottom:1px solid var(--border); font-size:.88rem; vertical-align:middle; }
+tr:last-child td { border-bottom:none; }
+tr:hover td { background:var(--surface2); }
+.badge { display:inline-block; padding:3px 9px; border-radius:99px; font-size:.72rem; font-weight:600; }
+.badge-blue  { background:rgba(108,99,255,.18); color:var(--accent); }
+.badge-pink  { background:rgba(255,101,132,.18); color:var(--accent2); }
+.badge-green { background:rgba(67,232,216,.18);  color:var(--accent3); }
+
+/* MODAL */
+#modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; z-index:500; padding:16px; backdrop-filter:blur(4px); }
+#modal-overlay.open { display:flex; }
+.modal { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:32px; width:100%; max-width:480px; box-shadow:var(--shadow); animation:slideUp .22s ease; max-height:90vh; overflow-y:auto; }
+@keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+.modal h2 { font-family:var(--font-head); font-size:1.35rem; margin-bottom:22px; }
+.form-group { margin-bottom:16px; }
+.form-group label { display:block; font-size:.77rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--text2); margin-bottom:6px; }
+.form-group input,.form-group select,.form-group textarea { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; color:var(--text); font-family:var(--font); font-size:.9rem; outline:none; transition:border-color .2s; }
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus { border-color:var(--accent); }
+.form-group select option { background:var(--surface); }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:24px; flex-wrap:wrap; }
+
+/* SETTINGS */
+.settings-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; }
+.settings-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:24px; }
+.settings-card h3 { font-weight:600; font-size:1rem; margin-bottom:18px; display:flex; align-items:center; gap:8px; }
+.theme-picker { display:flex; gap:10px; flex-wrap:wrap; }
+.theme-dot { width:36px; height:36px; border-radius:50%; cursor:pointer; border:3px solid transparent; transition:transform .15s,border-color .15s; }
+.theme-dot:hover { transform:scale(1.12); } .theme-dot.selected { border-color:var(--text); }
+.toggle-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); }
+.toggle-row:last-child { border-bottom:none; }
+.toggle-label { font-size:.9rem; }
+.toggle { width:42px; height:24px; background:var(--border); border-radius:99px; position:relative; cursor:pointer; transition:background .2s; }
+.toggle.on { background:var(--accent); }
+.toggle::after { content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; transition:transform .2s; }
+.toggle.on::after { transform:translateX(18px); }
+.color-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:4px; }
+.accent-swatch { width:30px; height:30px; border-radius:50%; cursor:pointer; border:3px solid transparent; transition:transform .15s; }
+.accent-swatch:hover { transform:scale(1.15); } .accent-swatch.selected { border-color:var(--text); }
+
+/* USERS */
+.user-cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; }
+.user-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; text-align:center; transition:border-color .15s; }
+.user-card:hover { border-color:var(--accent); }
+.user-card .avatar-lg { width:54px; height:54px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.3rem; color:#fff; margin:0 auto 12px; }
+.user-card .u-name { font-weight:600; font-size:.95rem; }
+.user-card .u-role { font-size:.78rem; color:var(--text2); margin-top:3px; margin-bottom:12px; }
+.user-card .u-actions { display:flex; gap:8px; justify-content:center; }
+
+/* MOBILE */
+#sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:99; }
+@media (max-width:768px) {
+  :root { --sidebar-w:270px; }
+  #sidebar { transform:translateX(-100%); }
+  #sidebar.open { transform:translateX(0); box-shadow:4px 0 30px rgba(0,0,0,.4); }
+  #sidebar-overlay.open { display:block; }
+  #main { margin-left:0; }
+  .hamburger { display:block; }
+  .topbar { padding:12px 14px; gap:8px; }
+  .topbar-date { display:none; }
+  .topbar-logout { display:none; }
+  .page { padding:16px 14px; }
+  .dash-grid { grid-template-columns:repeat(2,1fr); }
+  .stat-val { font-size:1.7rem; }
+  .cal-header { gap:5px; }
+  .cal-header h2 { font-size:1rem; min-width:90px; }
+  .cal-date-jump { font-size:.75rem; padding:6px 7px; }
+  .cal-cell { min-height:52px; padding:4px 3px; }
+  .cal-cell .day-num { font-size:.7rem; }
+  .cal-event-pill { display:none; }
+  .cal-cell.has-events::after { content:'•'; color:var(--accent); font-size:1.2rem; display:block; text-align:center; line-height:1.2; }
+  .form-row { grid-template-columns:1fr; }
+  .filter-bar { gap:6px; }
+  table { font-size:.8rem; }
+  th,td { padding:10px 8px; }
+  .settings-grid { grid-template-columns:1fr; }
+  .user-cards { grid-template-columns:repeat(2,1fr); }
+  .modal { padding:22px 18px; }
+  .table-wrap { overflow-x:auto; }
+  .hide-mobile { display:none !important; }
+  .btn { padding:8px 12px; font-size:.82rem; }
+}
+@media (max-width:400px) {
+  .dash-grid { grid-template-columns:1fr; }
+  .user-cards { grid-template-columns:1fr; }
+}
+
+#toast { position:fixed; bottom:28px; right:28px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 18px; font-size:.88rem; font-weight:500; box-shadow:var(--shadow); z-index:9999; transform:translateY(20px); opacity:0; transition:all .25s; pointer-events:none; max-width:280px; }
+#toast.show { transform:translateY(0); opacity:1; }
+::-webkit-scrollbar { width:6px; height:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:99px; }
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">PlanPro</div>
+    <div class="login-sub">Synchronisiert – Jetzt anmelden</div>
+    <div><label>Benutzername</label><input type="text" id="login-user" placeholder="Benutzername" autocomplete="username"></div>
+    <div><label>Passwort</label><input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"></div>
+    <div class="login-err" id="login-err">❌ Ungültige Anmeldedaten</div>
+    <button class="login-btn" onclick="doLogin()">Anmelden</button>
+    <button class="btn btn-ghost" onclick="doRegister()" style="margin-top:12px; width:100%">🔐 Neuen Account erstellen</button>
+  </div>
+</div>
+
+<div id="sidebar-overlay" onclick="closeSidebar()"></div>
+<div id="sync-badge" style="display:none"></div>
+
+<div id="app">
+  <nav id="sidebar">
+    <div class="sidebar-logo">PlanPro <span id="sb-user-label"></span></div>
+    <div class="nav-section">Übersicht</div>
+    <div class="nav-item active" onclick="navigate('dashboard')"><span class="icon">📊</span> Dashboard</div>
+    <div class="nav-section">Kalender</div>
+    <div class="nav-item" onclick="navigate('calendar')"><span class="icon">📅</span> Kalender</div>
+    <div class="nav-item" onclick="navigate('bookings')"><span class="icon">📋</span> Alle Buchungen</div>
+    <div class="nav-item" onclick="openNewEventModal()"><span class="icon">➕</span> Neuer Termin</div>
+    <div class="nav-section">Verwaltung</div>
+    <div class="nav-item" id="nav-users" onclick="navigate('users')"><span class="icon">👥</span> Benutzer</div>
+    <div class="nav-item" onclick="navigate('settings')"><span class="icon">⚙️</span> Einstellungen</div>
+    <div class="sidebar-bottom">
+      <div class="user-badge">
+        <div class="avatar" id="sb-avatar">?</div>
+        <div class="user-info">
+          <div class="user-name" id="sb-name"></div>
+          <div class="user-role" id="sb-role">Benutzer</div>
+        </div>
+      </div>
+      <button class="sidebar-logout-btn" onclick="doLogout()"><span class="icon">⏏️</span> Abmelden</button>
+    </div>
+  </nav>
+
+  <div id="main">
+    <div class="topbar">
+      <button class="hamburger" onclick="openSidebar()">☰</button>
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="topbar-date" id="topbar-date"></div>
+      <button class="btn btn-primary" onclick="openNewEventModal()">＋ Termin</button>
+    </div>
+
+    <div class="page active" id="page-dashboard">
+      <div class="dash-grid">
+        <div class="stat-card"><div class="stat-label">Heute</div><div class="stat-val" id="stat-today">0</div><div class="stat-sub">Termine heute</div></div>
+        <div class="stat-card c2"><div class="stat-label">Gesamt</div><div class="stat-val" id="stat-total">0</div><div class="stat-sub">Alle Buchungen</div></div>
+        <div class="stat-card c3"><div class="stat-label">Diese Woche</div><div class="stat-val" id="stat-week">0</div><div class="stat-sub">Termine diese Woche</div></div>
+      </div>
+      <div class="section-head"><h2>Heutige Termine</h2></div>
+      <div class="event-list" id="today-events"></div>
+    </div>
+
+    <div class="page" id="page-calendar">
+      <div class="cal-header">
+        <button class="btn btn-ghost" onclick="calPrev()">‹</button>
+        <h2 id="cal-month-label"></h2>
+        <button class="btn btn-ghost" onclick="calNext()">›</button>
+        <button class="btn btn-ghost" onclick="calToday()">Heute</button>
+        <input type="month" class="cal-date-jump" id="cal-jump" onchange="calJump(this.value)">
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+
+    <div class="page" id="page-bookings">
+      <div class="filter-bar">
+        <div class="filter-chip active" onclick="setFilter('all',this)">Alle</div>
+        <div class="filter-chip" onclick="setFilter('Arbeit',this)">Arbeit</div>
+        <div class="filter-chip" onclick="setFilter('Privat',this)">Privat</div>
+        <div class="filter-chip" onclick="setFilter('Meeting',this)">Meeting</div>
+        <div class="filter-chip" onclick="setFilter('Sonstiges',this)">Sonstiges</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Titel</th><th>Datum</th><th>Zeit</th><th>Kategorie</th><th class="hide-mobile">Notiz</th><th>Aktionen</th></tr></thead>
+          <tbody id="bookings-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="page" id="page-users">
+      <div class="section-head">
+        <h2>Benutzerverwaltung</h2>
+        <button class="btn btn-primary" onclick="openUserModal()">＋ Neuer Benutzer</button>
+      </div>
+      <div class="user-cards" id="user-cards"></div>
+    </div>
+
+    <div class="page" id="page-settings">
+      <div class="settings-grid">
+        <div class="settings-card">
+          <h3>🎨 Farbthema</h3>
+          <div class="theme-picker">
+            <div class="theme-dot selected" style="background:linear-gradient(135deg,#0f0f13,#6c63ff)" title="Dark" onclick="setTheme('dark',this)"></div>
+            <div class="theme-dot" style="background:linear-gradient(135deg,#f0f0f7,#6c63ff)" title="Light" onclick="setTheme('light',this)"></div>
+            <div class="theme-dot" style="background:linear-gradient(135deg,#071a2c,#00c9ff)" title="Ocean" onclick="setTheme('ocean',this)"></div>
+            <div class="theme-dot" style="background:linear-gradient(135deg,#0c1f0e,#5cdb95)" title="Forest" onclick="setTheme('forest',this)"></div>
+          </div>
+        </div>
+        <div class="settings-card">
+          <h3>🔵 Akzentfarbe</h3>
+          <div class="color-row">
+            <div class="accent-swatch selected" style="background:#6c63ff" onclick="setAccent('#6c63ff','#ff6584','#43e8d8',this)"></div>
+            <div class="accent-swatch" style="background:#f7931e" onclick="setAccent('#f7931e','#e74c3c','#f0e68c',this)"></div>
+            <div class="accent-swatch" style="background:#e91e8c" onclick="setAccent('#e91e8c','#ff9a56','#b0f0ff',this)"></div>
+            <div class="accent-swatch" style="background:#2ecc71" onclick="setAccent('#2ecc71','#f39c12','#74b9ff',this)"></div>
+            <div class="accent-swatch" style="background:#00bcd4" onclick="setAccent('#00bcd4','#ff5722','#a0f080',this)"></div>
+          </div>
+        </div>
+        <div class="settings-card">
+          <h3>🔔 Benachrichtigungen</h3>
+          <div class="toggle-row"><span class="toggle-label">Terminerinnerungen</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-row"><span class="toggle-label">Dashboard-Zusammenfassung</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-row"><span class="toggle-label">Neue Benutzer-Benachrichtigung</span><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+        </div>
+        <div class="settings-card">
+          <h3>🖥️ Darstellung</h3>
+          <div class="toggle-row"><span class="toggle-label">Kompakte Ansicht</span><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-row"><span class="toggle-label">Animationen</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-row"><span class="toggle-label">Kalender: Wochennummern</span><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+        </div>
+        <div class="settings-card">
+          <h3>👤 Mein Profil</h3>
+          <div class="form-group"><label>Anzeigename</label><input type="text" id="profile-name" placeholder="Name"></div>
+          <div class="form-group"><label>E-Mail</label><input type="email" id="profile-email" placeholder="deine@email.de"></div>
+          <button class="btn btn-primary" onclick="toast('✅ Profil (lokal) gespeichert – E-Mail-Änderung nur in Firebase möglich')">Speichern</button>
+        </div>
+        <div class="settings-card">
+          <h3>🗑️ Daten</h3>
+          <p style="color:var(--text2);font-size:.85rem;margin-bottom:14px">Alle eigenen Termine exportieren oder komplett löschen.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-ghost" onclick="exportData()">📥 Exportieren</button>
+            <button class="btn btn-danger" onclick="clearData()">🗑️ Alle Termine löschen</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modal-overlay"><div class="modal" id="modal-box"></div></div>
+<div id="toast"></div>
+
+<script type="module">
+  // ---------- FIREBASE IMPORTE ----------
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyD6OKm3jYYsZWhVyTmhDvHJ0EeDMT2RzXs",
+    authDomain: "planpro-siyo.firebaseapp.com",
+    databaseURL: "https://planpro-siyo-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "planpro-siyo",
+    storageBucket: "planpro-siyo.firebasestorage.app",
+    messagingSenderId: "540852603323",
+    appId: "1:540852603323:web:070805fd4a33dbf9469c9e",
+    measurementId: "G-T4YGD7GVB1"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+
+  // Globale Referenzen für nicht-Modul-Funktionen (onclick)
+  window.db = db;
+  window.addDoc = addDoc;
+  window.updateDoc = updateDoc;
+  window.deleteDoc = deleteDoc;
+  window.doc = doc;
+
+  // ---------- GLOBALE STATE ----------
+  let currentUser = null;
+  let calDate = new Date();
+  let bookingFilter = 'all';
+  let editingEventId = null;        // Firestore Dokument-ID
+  let currentPage = 'dashboard';
+  let events = [];                  // Wird von onSnapshot befüllt
+  let eventsUnsubscribe = null;
+  const SETTINGS_KEY = 'planpro_settings';
+
+  // ---------- HILFSFUNKTIONEN ----------
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(window.toastTimer);
+    window.toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+  }
+  window.toast = toast;
+
+  function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function formatDate(ds) { const [y,m,d] = ds.split('-'); return `${d}.${m}.${y}`; }
+  function todayStr() { return new Date().toISOString().slice(0,10); }
+  function weekRange() {
+    const d = new Date(), day = d.getDay() || 7;
+    const mon = new Date(d); mon.setDate(d.getDate() - day + 1);
+    const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+    return [mon.toISOString().slice(0,10), sun.toISOString().slice(0,10)];
+  }
+  function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+  function openModal() { document.getElementById('modal-overlay').classList.add('open'); }
+  window.closeModal = closeModal;
+  document.getElementById('modal-overlay').addEventListener('click', (e) => { if (e.target === document.getElementById('modal-overlay')) closeModal(); });
+  function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebar-overlay').classList.remove('open'); }
+  function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('sidebar-overlay').classList.add('open'); }
+  window.closeSidebar = closeSidebar;
+  window.openSidebar = openSidebar;
+
+  // ---------- LOGIN / REGISTER ----------
+  window.doLogin = async function() {
+    const username = document.getElementById('login-user').value.trim();
+    const password = document.getElementById('login-pass').value;
+    const email = username + "@planpro.local";
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      document.getElementById('login-err').style.display = 'none';
+    } catch (err) {
+      document.getElementById('login-err').style.display = 'block';
+      toast("❌ Login fehlgeschlagen");
+    }
+  };
+  window.doRegister = async function() {
+    const username = document.getElementById('login-user').value.trim();
+    const password = document.getElementById('login-pass').value;
+    const email = username + "@planpro.local";
+    if (!username || !password) { toast("Bitte Benutzername und Passwort eingeben"); return; }
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      toast("✅ Account erstellt! Jetzt anmelden.");
+    } catch (err) {
+      toast("Fehler: " + err.message);
+    }
+  };
+  window.doLogout = function() {
+    if (confirm("Wirklich abmelden?")) signOut(auth);
+    closeSidebar();
+    closeModal();
+  };
+
+  // ---------- APP ANZEIGEN ----------
+  function showLogin() {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+  }
+  function showApp() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    const displayName = currentUser.username || currentUser.email.split('@')[0];
+    document.getElementById('sb-name').textContent = displayName;
+    document.getElementById('sb-avatar').textContent = displayName.slice(0,2).toUpperCase();
+    document.getElementById('sb-user-label').textContent = 'Angemeldet als ' + displayName;
+    document.getElementById('profile-name').value = displayName;
+    document.getElementById('profile-email').value = currentUser.email;
+    // Benutzerverwaltung vorerst ausblenden (später mit Admin-Rolle)
+    document.getElementById('nav-users').style.display = 'none';
+    applySettings();
+    document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('de-DE', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+    navigate('dashboard');
+  }
+
+  // ---------- ECHTZEIT-LISTENER FÜR TERMINE ----------
+  function startEventsListener() {
+    if (eventsUnsubscribe) eventsUnsubscribe();
+    if (!currentUser) return;
+    const q = query(collection(db, "events"), where("userId", "==", currentUser.uid));
+    eventsUnsubscribe = onSnapshot(q, (snapshot) => {
+      events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      if (currentPage === 'dashboard') renderDashboard();
+      if (currentPage === 'calendar')  renderCalendar();
+      if (currentPage === 'bookings')  renderBookings();
+    });
+  }
+
+  // ---------- NAVIGATION ----------
+  const pageTitles = { dashboard:'Dashboard', calendar:'Kalender', bookings:'Alle Buchungen', users:'Benutzerverwaltung', settings:'Einstellungen' };
+  const navOrder = ['dashboard','calendar','bookings','users','settings'];
+  window.navigate = function(page) {
+    currentPage = page;
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-'+page).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const idx = navOrder.indexOf(page);
+    if (idx >= 0) document.querySelectorAll('.nav-item')[idx].classList.add('active');
+    document.getElementById('page-title').textContent = pageTitles[page] || page;
+    closeSidebar();
+    if (page === 'dashboard') renderDashboard();
+    if (page === 'calendar')  renderCalendar();
+    if (page === 'bookings')  renderBookings();
+    if (page === 'users')     renderUsers();
+  };
+
+  // ---------- DASHBOARD ----------
+  function renderDashboard() {
+    const td = todayStr();
+    const [wS, wE] = weekRange();
+    const todayEvs = events.filter(e => e.date === td);
+    document.getElementById('stat-today').textContent = todayEvs.length;
+    document.getElementById('stat-total').textContent = events.length;
+    document.getElementById('stat-week').textContent = events.filter(e => e.date >= wS && e.date <= wE).length;
+    const el = document.getElementById('today-events');
+    if (!todayEvs.length) {
+      el.innerHTML = '<div class="empty-state"><div class="ico">📅</div>Keine Termine heute.<br><br><button class="btn btn-primary" onclick="openNewEventModal()">Termin erstellen</button></div>';
+    } else {
+      const colors = ['','c2','c3'];
+      el.innerHTML = todayEvs.sort((a,b)=>a.time.localeCompare(b.time)).map(e => `
+        <div class="event-card" onclick="viewEvent('${e.id}')">
+          <div class="event-dot ${colors[e.color||0]}"></div>
+          <div class="event-info"><div class="event-title">${esc(e.title)}</div><div class="event-meta">${esc(e.category)}${e.note ? ' · '+esc(e.note) : ''}</div></div>
+          <div class="event-time">${esc(e.time)}</div>
+        </div>`).join('');
+    }
+  }
+
+  // ---------- KALENDER ----------
+  function renderCalendar() {
+    const y = calDate.getFullYear(), m = calDate.getMonth();
+    document.getElementById('cal-month-label').textContent = new Date(y,m,1).toLocaleDateString('de-DE',{month:'long',year:'numeric'});
+    document.getElementById('cal-jump').value = `${y}-${String(m+1).padStart(2,'0')}`;
+    const today = todayStr();
+    const colMap = ['','c2','c3'];
+    const dayNames = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+    let html = dayNames.map(d => `<div class="cal-day-name">${d}</div>`).join('');
+    const first = new Date(y,m,1), startDay = first.getDay() || 7, totalDays = new Date(y,m+1,0).getDate();
+    for (let i = 1; i < startDay; i++) {
+      const d = new Date(y, m, 1 - (startDay - i));
+      const ds = d.toISOString().slice(0,10);
+      html += cellHtml(d.getDate(), ds, events.filter(e => e.date === ds), colMap, true, today);
+    }
+    for (let d = 1; d <= totalDays; d++) {
+      const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      html += cellHtml(d, ds, events.filter(e => e.date === ds), colMap, false, today);
+    }
+    document.getElementById('cal-grid').innerHTML = html;
+  }
+  function cellHtml(dayNum, ds, dayEvs, colMap, otherMonth, today) {
+    const isToday = ds === today;
+    const pills = dayEvs.slice(0,3).map(e => `<div class="cal-event-pill ${colMap[e.color||0]}" onclick="viewEvent('${e.id}');event.stopPropagation()">${esc(e.title)}</div>`).join('');
+    const more = dayEvs.length > 3 ? `<div style="font-size:.64rem;color:var(--text3)">+${dayEvs.length-3} weitere</div>` : '';
+    return `<div class="cal-cell${otherMonth ? ' other-month' : ''}${isToday ? ' today' : ''}${dayEvs.length ? ' has-events' : ''}" onclick="calClick('${ds}')">
+              <div class="day-num">${dayNum}</div>${pills}${more}
+            </div>`;
+  }
+  window.calJump = function(val) { if (!val) return; const [y,m] = val.split('-').map(Number); calDate = new Date(y, m-1, 1); renderCalendar(); };
+  window.calPrev = function() { calDate.setMonth(calDate.getMonth()-1); renderCalendar(); };
+  window.calNext = function() { calDate.setMonth(calDate.getMonth()+1); renderCalendar(); };
+  window.calToday = function() { calDate = new Date(); renderCalendar(); };
+  window.calClick = function(ds) { openNewEventModal(ds); };
+
+  // ---------- EVENT DETAIL & MODAL ----------
+  window.viewEvent = async function(id) {
+    const ev = events.find(e => e.id === id);
+    if (!ev) return;
+    const colMap = ['','c2','c3'];
+    const catBadge = { 'Arbeit':'badge-blue', 'Meeting':'badge-green', 'Privat':'badge-pink', 'Sonstiges':'badge-blue' };
+    document.getElementById('modal-box').innerHTML = `
+      <div class="event-detail-header">
+        <div class="event-detail-dot ${colMap[ev.color||0]}"></div>
+        <h2 style="margin:0;font-size:1.4rem">${esc(ev.title)}</h2>
+      </div>
+      <div class="detail-row"><div class="detail-icon">📅</div><div><div class="detail-label">Datum</div><div class="detail-val">${formatDate(ev.date)}</div></div></div>
+      <div class="detail-row"><div class="detail-icon">🕐</div><div><div class="detail-label">Uhrzeit</div><div class="detail-val">${esc(ev.time)} Uhr</div></div></div>
+      <div class="detail-row"><div class="detail-icon">🏷️</div><div><div class="detail-label">Kategorie</div><div class="detail-val"><span class="badge ${catBadge[ev.category] || 'badge-blue'}">${esc(ev.category)}</span></div></div></div>
+      <div class="detail-row" style="flex-direction:column;gap:6px">
+        <div style="display:flex;gap:8px;align-items:center"><div class="detail-icon">📝</div><div class="detail-label">Notiz</div></div>
+        <div class="detail-note-box">${ev.note ? esc(ev.note) : '<span style="color:var(--text3);font-style:italic">Keine Notiz</span>'}</div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal()">Schließen</button>
+        <button class="btn btn-primary" onclick="editEvent('${ev.id}')">✏️ Bearbeiten</button>
+        <button class="btn btn-danger" onclick="deleteEvent('${ev.id}');closeModal()">🗑️ Löschen</button>
+      </div>`;
+    openModal();
+  };
+  window.openNewEventModal = function(date = '') {
+    editingEventId = null;
+    showEventModal({ title:'', date: date || todayStr(), time:'09:00', category:'Arbeit', note:'', color:0 }, false);
+  };
+  window.editEvent = async function(id) {
+    const ev = events.find(e => e.id === id);
+    if (!ev) return;
+    editingEventId = id;
+    showEventModal(ev, true);
+  };
+  function showEventModal(ev, isEdit) {
+    const catOpts = ['Arbeit','Privat','Meeting','Sonstiges'].map(c => `<option${c===ev.category ? ' selected' : ''}>${c}</option>`).join('');
+    const colorOpts = [['Lila','0'],['Pink','1'],['Türkis','2']].map(([l,v]) => `<option value="${v}"${v==ev.color ? ' selected' : ''}>${l}</option>`).join('');
+    document.getElementById('modal-box').innerHTML = `
+      <h2>${isEdit ? 'Termin bearbeiten' : 'Neuer Termin'}</h2>
+      <div class="form-group"><label>Titel</label><input type="text" id="ev-title" value="${esc(ev.title)}" placeholder="Termintitel"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Datum</label><input type="date" id="ev-date" value="${ev.date}"></div>
+        <div class="form-group"><label>Uhrzeit</label><input type="time" id="ev-time" value="${ev.time}"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Kategorie</label><select id="ev-cat">${catOpts}</select></div>
+        <div class="form-group"><label>Farbe</label><select id="ev-color">${colorOpts}</select></div>
+      </div>
+      <div class="form-group"><label>Notiz</label><textarea id="ev-note" rows="3">${esc(ev.note || '')}</textarea></div>
+      <div class="modal-actions">
+        ${isEdit ? `<button class="btn btn-danger" onclick="deleteEvent('${editingEventId}');closeModal()">🗑️ Löschen</button>` : ''}
+        <button class="btn btn-ghost" onclick="closeModal()">Abbrechen</button>
+        <button class="btn btn-primary" onclick="saveEvent()">💾 Speichern</button>
+      </div>`;
+    openModal();
+    setTimeout(() => { const t = document.getElementById('ev-title'); if(t) t.focus(); }, 100);
+  }
+  window.saveEvent = async function() {
+    const title = document.getElementById('ev-title').value.trim();
+    if (!title) { toast("Bitte Titel eingeben"); return; }
+    const eventData = {
+      title,
+      date: document.getElementById('ev-date').value,
+      time: document.getElementById('ev-time').value,
+      category: document.getElementById('ev-cat').value,
+      note: document.getElementById('ev-note').value.trim(),
+      color: parseInt(document.getElementById('ev-color').value) || 0,
+      userId: currentUser.uid
+    };
+    try {
+      if (editingEventId) {
+        await updateDoc(doc(db, "events", editingEventId), eventData);
+        toast("✅ Termin aktualisiert");
+      } else {
+        await addDoc(collection(db, "events"), eventData);
+        toast("✅ Termin erstellt");
+      }
+      closeModal();
+    } catch (err) { toast("Fehler: " + err.message); }
+  };
+  window.deleteEvent = async function(id) {
+    if (!confirm("Termin wirklich löschen?")) return;
+    await deleteDoc(doc(db, "events", id));
+    toast("🗑️ Gelöscht");
+  };
+
+  // ---------- BUCHUNGEN ----------
+  window.setFilter = function(f, el) {
+    bookingFilter = f;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderBookings();
+  };
+  function renderBookings() {
+    let filtered = events;
+    if (bookingFilter !== 'all') filtered = filtered.filter(e => e.category === bookingFilter);
+    filtered.sort((a,b) => (a.date + a.time).localeCompare(b.date + b.time));
+    const catBadge = { 'Arbeit':'badge-blue', 'Meeting':'badge-green', 'Privat':'badge-pink', 'Sonstiges':'badge-blue' };
+    const tbody = document.getElementById('bookings-tbody');
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3)">Keine Buchungen</td></tr>';
+    } else {
+      tbody.innerHTML = filtered.map(e => `
+        <tr>
+          <td style="cursor:pointer;font-weight:600" onclick="viewEvent('${e.id}')">${esc(e.title)}</td>
+          <td>${formatDate(e.date)}</td>
+          <td>${esc(e.time)}</td>
+          <td><span class="badge ${catBadge[e.category] || 'badge-blue'}">${esc(e.category)}</span></td>
+          <td class="hide-mobile">${esc(e.note || '—')}</td>
+          <td style="white-space:nowrap">
+            <button class="btn btn-ghost" style="padding:5px 9px;font-size:.76rem" onclick="viewEvent('${e.id}')">👁️</button>
+            <button class="btn btn-ghost" style="padding:5px 9px;font-size:.76rem;margin-left:3px" onclick="editEvent('${e.id}')">✏️</button>
+            <button class="btn btn-danger" style="padding:5px 9px;font-size:.76rem;margin-left:3px" onclick="deleteEvent('${e.id}')">🗑️</button>
+          </td>
+        </tr>`).join('');
+    }
+  }
+
+  // ---------- BENUTZER (vereinfacht) ----------
+  function renderUsers() {
+    document.getElementById('user-cards').innerHTML = '<div class="empty-state">Benutzerverwaltung über Firebase Console. Hier später erweiterbar.</div>';
+  }
+  window.openUserModal = function() { toast("Benutzerverwaltung nur über Firebase Console möglich."); };
+
+  // ---------- EINSTELLUNGEN (Theme, Akzent) ----------
+  window.setTheme = function(theme, el) {
+    document.body.setAttribute('data-theme', theme === 'dark' ? '' : theme);
+    document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('selected'));
+    el.classList.add('selected');
+    const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+    settings.theme = theme;
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    toast("🎨 Theme geändert");
+  };
+  window.setAccent = function(a1, a2, a3, el) {
+    document.documentElement.style.setProperty('--accent', a1);
+    document.documentElement.style.setProperty('--accent2', a2);
+    document.documentElement.style.setProperty('--accent3', a3);
+    document.querySelectorAll('.accent-swatch').forEach(s => s.classList.remove('selected'));
+    el.classList.add('selected');
+    const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+    settings.accent = [a1, a2, a3];
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    toast("🔵 Akzentfarbe geändert");
+  };
+  function applySettings() {
+    const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+    if (settings.theme) document.body.setAttribute('data-theme', settings.theme === 'dark' ? '' : settings.theme);
+    if (settings.accent) {
+      document.documentElement.style.setProperty('--accent', settings.accent[0]);
+      document.documentElement.style.setProperty('--accent2', settings.accent[1]);
+      document.documentElement.style.setProperty('--accent3', settings.accent[2]);
+    }
+  }
+  window.exportData = function() {
+    const data = { events: events, exported: new Date().toISOString() };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'planpro_export.json';
+    a.click();
+    toast("📥 Exportiert");
+  };
+  window.clearData = async function() {
+    if (!confirm("Wirklich ALLE deine Termine unwiderruflich löschen?")) return;
+    for (const ev of events) {
+      await deleteDoc(doc(db, "events", ev.id));
+    }
+    toast("🗑️ Alle Termine gelöscht");
+  };
+
+  // ---------- AUTH STATUS ----------
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      currentUser = { uid: user.uid, email: user.email, username: user.email.split('@')[0] };
+      showApp();
+      startEventsListener();
+    } else {
+      if (eventsUnsubscribe) eventsUnsubscribe();
+      showLogin();
+    }
+  });
+</script>
+</body>
+</html>
