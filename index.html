@@ -378,7 +378,39 @@ tr:hover td { background:var(--surface2); }
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
   import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
-
+  import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, where, onSnapshot, getDoc } from "...";
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    console.log("✅ Eingeloggt mit UID:", user.uid);
+    // Basisdaten setzen
+    currentUser = { uid: user.uid, email: user.email, username: user.email.split('@')[0], role: 'user' };
+    
+    // Rolle aus Firestore laden
+    try {
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (userDoc.exists() && userDoc.data().role === 'admin') {
+        currentUser.role = 'admin';
+        console.log("👑 Admin-Rechte erteilt");
+      } else {
+        currentUser.role = 'user';
+      }
+    } catch (err) {
+      console.warn("Kein Rollendokument gefunden – Standardbenutzer");
+    }
+    
+    showApp();
+    const navUsers = document.getElementById('nav-users');
+if (currentUser.role === 'admin') {
+  navUsers.style.display = 'flex';   // oder 'block', je nach Layout
+} else {
+  navUsers.style.display = 'none';
+}
+    startEventsListener();
+  } else {
+    if (eventsUnsubscribe) eventsUnsubscribe();
+    showLogin();
+  }
+});
   const firebaseConfig = {
     apiKey: "AIzaSyD6OKm3jYYsZWhVyTmhDvHJ0EeDMT2RzXs",
     authDomain: "planpro-siyo.firebaseapp.com",
@@ -503,6 +535,57 @@ tr:hover td { background:var(--surface2); }
       if (currentPage === 'bookings')  renderBookings();
     });
   }
+  // ---------- BENUTZERVERWALTUNG (nur für Admin) ----------
+async function renderUsers() {
+  if (currentUser.role !== 'admin') return;
+  const usersSnapshot = await getDocs(collection(db, "users"));
+  const usersList = usersSnapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
+  const container = document.getElementById('user-cards');
+  if (!usersList.length) {
+    container.innerHTML = '<div class="empty-state">Keine Benutzer gefunden.</div>';
+    return;
+  }
+  container.innerHTML = usersList.map(u => `
+    <div class="user-card">
+      <div class="avatar-lg" style="background:var(--accent)">${(u.displayName || u.email || u.uid).slice(0,2).toUpperCase()}</div>
+      <div class="u-name">${esc(u.displayName || u.email || u.uid)}</div>
+      <div class="u-role">${u.role === 'admin' ? '👑 Administrator' : '👤 Benutzer'}</div>
+      <div class="u-actions">
+        <button class="btn btn-ghost" style="font-size:.78rem;padding:5px 10px" onclick="editUser('${u.uid}')">✏️ Rolle ändern</button>
+        ${u.uid !== currentUser.uid ? `<button class="btn btn-danger" style="font-size:.78rem;padding:5px 10px" onclick="deleteUser('${u.uid}')">🗑️ Löschen</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+window.editUser = async function(uid) {
+  const newRole = prompt('Neue Rolle (admin / user):', 'user');
+  if (!newRole || !['admin','user'].includes(newRole)) return toast('Ungültige Rolle');
+  await updateDoc(doc(db, "users", uid), { role: newRole });
+  toast(`✅ Rolle für ${uid} geändert`);
+  renderUsers();
+};
+
+window.deleteUser = async function(uid) {
+  if (!confirm('Benutzer unwiderruflich löschen?')) return;
+  await deleteDoc(doc(db, "users", uid));
+  toast('🗑️ Benutzer gelöscht');
+  renderUsers();
+};
+
+window.openUserModal = function() {
+  const email = prompt('E-Mail des neuen Benutzers:', '');
+  if (!email) return;
+  const displayName = prompt('Anzeigename (optional):', '') || email;
+  const role = prompt('Rolle (admin / user):', 'user');
+  if (!role || !['admin','user'].includes(role)) return toast('Ungültige Rolle');
+  // Benutzer muss zuerst in Authentication existieren! 
+  // Du kannst hier nur einen vorhandenen Auth-User in die users-Sammlung aufnehmen.
+  // Einfacher: Lass den Admin bestehende Auth-User per UID hinzufügen.
+  toast('Benutzer muss zuerst über den Login-Bildschirm registriert werden. Danach hier die UID eintragen.');
+  // Für echte Benutzerverwaltung müsstest du die Firebase Admin SDK verwenden. 
+  // Für den Anfang reicht es, Admin-Rechte manuell in der Console zu vergeben.
+};
 
   // ---------- NAVIGATION ----------
   const pageTitles = { dashboard:'Dashboard', calendar:'Kalender', bookings:'Alle Buchungen', users:'Benutzerverwaltung', settings:'Einstellungen' };
