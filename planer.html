@@ -283,8 +283,6 @@ tr:hover td { background:var(--surface2); }
       <button class="hamburger" onclick="openSidebar()">☰</button>
       <div class="topbar-title" id="page-title">Dashboard</div>
       <div class="topbar-date" id="topbar-date"></div>
-      <!-- ✅ ABMELDEN-BUTTON IN TOPBAR (nur Desktop) -->
-      <button class="topbar-logout" onclick="doLogout()">⏏️ Abmelden</button>
       <button class="btn btn-primary" onclick="openNewEventModal()">＋ Termin</button>
     </div>
 
@@ -410,7 +408,8 @@ function save(k,v){ localStorage.setItem(k,JSON.stringify(v)); }
 // ─── DEFAULTS ────────────────────────────────────────────────
 function initUsers(){
   if(!localStorage.getItem(USERS_KEY))
-    save(USERS_KEY,[{id:1,username:'sa',password:'test123test',role:'admin',display:'Admin (sa)'}]);
+    save(USERS_KEY,[{id:1,username:'sa',password:'MeinLeben',role:'admin',display:'Admin (sa)'}]);
+	save(USERS_KEY,[{id:2,username:'dk',password:'norbi2026',role:'user',display:'User (dk)'}]);
 }
 function initEvents(){
   if(!localStorage.getItem(EVENTS_KEY)){
