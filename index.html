@@ -238,6 +238,24 @@ tr:hover td { background:var(--surface2); }
 ::-webkit-scrollbar { width:6px; height:6px; }
 ::-webkit-scrollbar-track { background:transparent; }
 ::-webkit-scrollbar-thumb { background:var(--border); border-radius:99px; }
+  /* Erledigte Termine */
+.event-completed, .event-card.completed, .cal-event-pill.completed {
+  opacity: 0.6;
+  filter: grayscale(0.5);
+  text-decoration: line-through;
+}
+.event-completed .event-title, .event-card.completed .event-title {
+  text-decoration: line-through;
+}
+/* In Buchungstabelle */
+tr.completed td {
+  opacity: 0.6;
+  filter: grayscale(0.3);
+  text-decoration: line-through;
+}
+.cal-event-pill.completed {
+  text-decoration: line-through;
+}
 </style>
 </head>
 <body>
@@ -564,7 +582,7 @@ tr:hover td { background:var(--surface2); }
     if (idx >= 0) document.querySelectorAll('.nav-item')[idx].classList.add('active');
     document.getElementById('page-title').textContent = pageTitles[page] || page;
     closeSidebar();
-    if (page === 'dashboard') renderDashboard();
+    if (page === 'dashboard') ();
     if (page === 'calendar')  renderCalendar();
     if (page === 'bookings')  renderBookings();
     if (page === 'users')     renderUsers();
@@ -584,11 +602,11 @@ tr:hover td { background:var(--surface2); }
     } else {
       const colors = ['','c2','c3'];
       el.innerHTML = todayEvs.sort((a,b)=>a.time.localeCompare(b.time)).map(e => `
-        <div class="event-card" onclick="viewEvent('${e.id}')">
-          <div class="event-dot ${colors[e.color||0]}"></div>
-          <div class="event-info"><div class="event-title">${esc(e.title)}</div><div class="event-meta">${esc(e.category)}${e.note ? ' · '+esc(e.note) : ''}</div></div>
-          <div class="event-time">${esc(e.time)}</div>
-        </div>`).join('');
+        <div class="event-card ${e.completed ? 'completed' : ''}" onclick="viewEvent('${e.id}')">
+        <div class="event-dot ${colors[e.color||0]}"></div>
+        <div class="event-info"><div class="event-title">${esc(e.title)}</div><div class="event-meta">${esc(e.category)}${e.note ? ' · '+esc(e.note) : ''}</div></div>
+        <div class="event-time">${esc(e.time)}</div>
+      </div>`).join('');
     }
   }
 
@@ -615,7 +633,7 @@ tr:hover td { background:var(--surface2); }
   }
   function cellHtml(dayNum, ds, dayEvs, colMap, otherMonth, today) {
     const isToday = ds === today;
-    const pills = dayEvs.slice(0,3).map(e => `<div class="cal-event-pill ${colMap[e.color||0]}" onclick="viewEvent('${e.id}');event.stopPropagation()">${esc(e.title)}</div>`).join('');
+    const pills = dayEvs.slice(0,3).map(e => `<div class="cal-event-pill ${colMap[e.color||0]} ${e.completed ? 'completed' : ''}" onclick="viewEvent('${e.id}');event.stopPropagation()">${esc(e.title)}</div>`).join('');
     const more = dayEvs.length > 3 ? `<div style="font-size:.64rem;color:var(--text3)">+${dayEvs.length-3} weitere</div>` : '';
     return `<div class="cal-cell${otherMonth ? ' other-month' : ''}${isToday ? ' today' : ''}${dayEvs.length ? ' has-events' : ''}" onclick="calClick('${ds}')">
               <div class="day-num">${dayNum}</div>${pills}${more}
@@ -677,6 +695,11 @@ tr:hover td { background:var(--surface2); }
         <div class="form-group"><label>Farbe</label><select id="ev-color">c</select></div>
       </div>
       <div class="form-group"><label>Notiz</label><textarea id="ev-note" rows="3">${esc(ev.note || '')}</textarea></div>
+      <div class="form-group">
+      <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+      <input type="checkbox" id="ev-completed" ${ev.completed ? 'checked' : ''}> Erledigt
+      </label>
+    </div>
       <div class="modal-actions">
         ${isEdit ? `<button class="btn btn-danger" onclick="deleteEvent('${editingEventId}');closeModal()">🗑️ Löschen</button>` : ''}
         <button class="btn btn-ghost" onclick="closeModal()">Abbrechen</button>
@@ -695,6 +718,7 @@ tr:hover td { background:var(--surface2); }
       category: document.getElementById('ev-cat').value,
       note: document.getElementById('ev-note').value.trim(),
       color: parseInt(document.getElementById('ev-color').value) || 0,
+      completed: document.getElementById('ev-completed').checked,  // neu
       userId: currentUser.uid
     };
     try {
@@ -763,7 +787,7 @@ tr:hover td { background:var(--surface2); }
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3)">Keine Buchungen</td></tr>';
   } else {
     tbody.innerHTML = filtered.map(e => `
-      <tr>
+      <tr class="${e.completed ? 'completed' : ''}">
         <td style="cursor:pointer;font-weight:600" onclick="viewEvent('${e.id}')">${esc(e.title)}</td>
         <td>${formatDate(e.date)}</td>
         <td>${esc(e.time)}</td>
@@ -773,10 +797,16 @@ tr:hover td { background:var(--surface2); }
           <button class="btn btn-ghost" style="padding:5px 9px;font-size:.76rem" onclick="viewEvent('${e.id}')">👁️</button>
           <button class="btn btn-ghost" style="padding:5px 9px;font-size:.76rem;margin-left:3px" onclick="editEvent('${e.id}')">✏️</button>
           <button class="btn btn-danger" style="padding:5px 9px;font-size:.76rem;margin-left:3px" onclick="deleteEvent('${e.id}')">🗑️</button>
-        </td>
-      </tr>`).join('');
-  }
+      </td>
+    </tr>
+`).join('');
 }
+  window.toggleCompleted = async function(id) {
+  const ev = events.find(e => e.id === id);
+  if (!ev) return;
+  await updateDoc(doc(db, "events", id), { completed: !ev.completed });
+  toast(ev.completed ? "Termin als offen markiert" : "Termin als erledigt markiert");
+};
 
   // ---------- BENUTZERVERWALTUNG (ADMIN) ----------
   async function renderUsers() {
