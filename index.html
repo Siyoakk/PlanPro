@@ -59,8 +59,6 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); min-hei
 .topbar { display:flex; align-items:center; padding:18px 32px; border-bottom:1px solid var(--border); background:var(--surface); position:sticky; top:0; z-index:50; gap:12px; }
 .topbar-title { font-family:var(--font-head); font-size:1.5rem; flex:1; }
 .topbar-date { color:var(--text2); font-size:.85rem; white-space:nowrap; }
-.topbar-logout { display:flex; align-items:center; gap:6px; padding:8px 14px; border-radius:var(--radius-sm); border:1px solid rgba(255,101,132,.35); background:rgba(255,101,132,.08); color:var(--accent2); cursor:pointer; font-family:var(--font); font-size:.82rem; font-weight:600; transition:background .15s; white-space:nowrap; }
-.topbar-logout:hover { background:rgba(255,101,132,.2); }
 .btn { display:inline-flex; align-items:center; gap:6px; padding:9px 18px; border-radius:var(--radius-sm); border:none; font-family:var(--font); font-size:.88rem; font-weight:600; cursor:pointer; transition:opacity .15s,transform .1s; }
 .btn:active { transform:scale(.97); }
 .btn-primary { background:var(--accent); color:#fff; } .btn-primary:hover { opacity:.88; }
@@ -118,7 +116,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); min-hei
 .event-detail-dot.c2 { background:var(--accent2); } .event-detail-dot.c3 { background:var(--accent3); }
 .detail-row { display:flex; gap:10px; margin-bottom:14px; align-items:flex-start; }
 .detail-icon { font-size:1rem; width:22px; flex-shrink:0; margin-top:2px; }
-.detail-label { font-size:.72rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--text3); margin-bottom:3px; }
+.detail-label { font-size:.72rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--text3); margin-bottom:3px; }
 .detail-val { font-size:.92rem; color:var(--text); }
 .detail-note-box { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; font-size:.88rem; color:var(--text2); min-height:52px; white-space:pre-wrap; line-height:1.5; }
 
@@ -129,14 +127,14 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); min-hei
 .table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
 table { width:100%; border-collapse:collapse; }
 thead { background:var(--surface2); }
-th { padding:12px 16px; text-align:left; font-size:.75rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--text2); border-bottom:1px solid var(--border); }
+th { padding:12px 16px; text-align:left; font-size:.75rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--text2); border-bottom:1px solid var(--border); }
 td { padding:13px 16px; border-bottom:1px solid var(--border); font-size:.88rem; vertical-align:middle; }
 tr:last-child td { border-bottom:none; }
 tr:hover td { background:var(--surface2); }
 .badge { display:inline-block; padding:3px 9px; border-radius:99px; font-size:.72rem; font-weight:600; }
-.badge-blue  { background:rgba(108,99,255,.18); color:var(--accent); }
-.badge-pink  { background:rgba(255,101,132,.18); color:var(--accent2); }
-.badge-green { background:rgba(67,232,216,.18);  color:var(--accent3); }
+.badge-blue { background:rgba(108,99,255,.18); color:var(--accent); }
+.badge-pink { background:rgba(255,101,132,.18); color:var(--accent2); }
+.badge-green { background:rgba(67,232,216,.18); color:var(--accent3); }
 
 /* MODAL */
 #modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; z-index:500; padding:16px; backdrop-filter:blur(4px); }
@@ -190,7 +188,6 @@ tr:hover td { background:var(--surface2); }
   .hamburger { display:block; }
   .topbar { padding:12px 14px; gap:8px; }
   .topbar-date { display:none; }
-  .topbar-logout { display:none; }
   .page { padding:16px 14px; }
   .dash-grid { grid-template-columns:repeat(2,1fr); }
   .stat-val { font-size:1.7rem; }
@@ -376,41 +373,9 @@ tr:hover td { background:var(--surface2); }
 <script type="module">
   // ---------- FIREBASE IMPORTE ----------
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, where, onSnapshot, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
-  import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, where, onSnapshot, getDoc } from "...";
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    console.log("✅ Eingeloggt mit UID:", user.uid);
-    // Basisdaten setzen
-    currentUser = { uid: user.uid, email: user.email, username: user.email.split('@')[0], role: 'user' };
-    
-    // Rolle aus Firestore laden
-    try {
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (userDoc.exists() && userDoc.data().role === 'admin') {
-        currentUser.role = 'admin';
-        console.log("👑 Admin-Rechte erteilt");
-      } else {
-        currentUser.role = 'user';
-      }
-    } catch (err) {
-      console.warn("Kein Rollendokument gefunden – Standardbenutzer");
-    }
-    
-    showApp();
-    const navUsers = document.getElementById('nav-users');
-if (currentUser.role === 'admin') {
-  navUsers.style.display = 'flex';   // oder 'block', je nach Layout
-} else {
-  navUsers.style.display = 'none';
-}
-    startEventsListener();
-  } else {
-    if (eventsUnsubscribe) eventsUnsubscribe();
-    showLogin();
-  }
-});
+
   const firebaseConfig = {
     apiKey: "AIzaSyD6OKm3jYYsZWhVyTmhDvHJ0EeDMT2RzXs",
     authDomain: "planpro-siyo.firebaseapp.com",
@@ -426,7 +391,7 @@ if (currentUser.role === 'admin') {
   const db = getFirestore(app);
   const auth = getAuth(app);
 
-  // Globale Referenzen für nicht-Modul-Funktionen (onclick)
+  // Globale Referenzen (für nicht-Modul-Funktionen)
   window.db = db;
   window.addDoc = addDoc;
   window.updateDoc = updateDoc;
@@ -437,9 +402,9 @@ if (currentUser.role === 'admin') {
   let currentUser = null;
   let calDate = new Date();
   let bookingFilter = 'all';
-  let editingEventId = null;        // Firestore Dokument-ID
+  let editingEventId = null;
   let currentPage = 'dashboard';
-  let events = [];                  // Wird von onSnapshot befüllt
+  let events = [];
   let eventsUnsubscribe = null;
   const SETTINGS_KEY = 'planpro_settings';
 
@@ -516,17 +481,19 @@ if (currentUser.role === 'admin') {
     document.getElementById('sb-user-label').textContent = 'Angemeldet als ' + displayName;
     document.getElementById('profile-name').value = displayName;
     document.getElementById('profile-email').value = currentUser.email;
-    // Benutzerverwaltung vorerst ausblenden (später mit Admin-Rolle)
-    document.getElementById('nav-users').style.display = 'none';
+    // Admin-Menüpunkt ein-/ausblenden
+    const navUsers = document.getElementById('nav-users');
+    if (currentUser.role === 'admin') navUsers.style.display = 'flex';
+    else navUsers.style.display = 'none';
     applySettings();
     document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('de-DE', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
     navigate('dashboard');
   }
 
-  // ---------- ECHTZEIT-LISTENER FÜR TERMINE ----------
+  // ---------- ECHTZEIT-LISTENER ----------
   function startEventsListener() {
     if (eventsUnsubscribe) eventsUnsubscribe();
-    if (!currentUser) return;
+    if (!currentUser || !currentUser.uid) return;
     const q = query(collection(db, "events"), where("userId", "==", currentUser.uid));
     eventsUnsubscribe = onSnapshot(q, (snapshot) => {
       events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -535,57 +502,6 @@ if (currentUser.role === 'admin') {
       if (currentPage === 'bookings')  renderBookings();
     });
   }
-  // ---------- BENUTZERVERWALTUNG (nur für Admin) ----------
-async function renderUsers() {
-  if (currentUser.role !== 'admin') return;
-  const usersSnapshot = await getDocs(collection(db, "users"));
-  const usersList = usersSnapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
-  const container = document.getElementById('user-cards');
-  if (!usersList.length) {
-    container.innerHTML = '<div class="empty-state">Keine Benutzer gefunden.</div>';
-    return;
-  }
-  container.innerHTML = usersList.map(u => `
-    <div class="user-card">
-      <div class="avatar-lg" style="background:var(--accent)">${(u.displayName || u.email || u.uid).slice(0,2).toUpperCase()}</div>
-      <div class="u-name">${esc(u.displayName || u.email || u.uid)}</div>
-      <div class="u-role">${u.role === 'admin' ? '👑 Administrator' : '👤 Benutzer'}</div>
-      <div class="u-actions">
-        <button class="btn btn-ghost" style="font-size:.78rem;padding:5px 10px" onclick="editUser('${u.uid}')">✏️ Rolle ändern</button>
-        ${u.uid !== currentUser.uid ? `<button class="btn btn-danger" style="font-size:.78rem;padding:5px 10px" onclick="deleteUser('${u.uid}')">🗑️ Löschen</button>` : ''}
-      </div>
-    </div>
-  `).join('');
-}
-
-window.editUser = async function(uid) {
-  const newRole = prompt('Neue Rolle (admin / user):', 'user');
-  if (!newRole || !['admin','user'].includes(newRole)) return toast('Ungültige Rolle');
-  await updateDoc(doc(db, "users", uid), { role: newRole });
-  toast(`✅ Rolle für ${uid} geändert`);
-  renderUsers();
-};
-
-window.deleteUser = async function(uid) {
-  if (!confirm('Benutzer unwiderruflich löschen?')) return;
-  await deleteDoc(doc(db, "users", uid));
-  toast('🗑️ Benutzer gelöscht');
-  renderUsers();
-};
-
-window.openUserModal = function() {
-  const email = prompt('E-Mail des neuen Benutzers:', '');
-  if (!email) return;
-  const displayName = prompt('Anzeigename (optional):', '') || email;
-  const role = prompt('Rolle (admin / user):', 'user');
-  if (!role || !['admin','user'].includes(role)) return toast('Ungültige Rolle');
-  // Benutzer muss zuerst in Authentication existieren! 
-  // Du kannst hier nur einen vorhandenen Auth-User in die users-Sammlung aufnehmen.
-  // Einfacher: Lass den Admin bestehende Auth-User per UID hinzufügen.
-  toast('Benutzer muss zuerst über den Login-Bildschirm registriert werden. Danach hier die UID eintragen.');
-  // Für echte Benutzerverwaltung müsstest du die Firebase Admin SDK verwenden. 
-  // Für den Anfang reicht es, Admin-Rechte manuell in der Console zu vergeben.
-};
 
   // ---------- NAVIGATION ----------
   const pageTitles = { dashboard:'Dashboard', calendar:'Kalender', bookings:'Alle Buchungen', users:'Benutzerverwaltung', settings:'Einstellungen' };
@@ -662,7 +578,7 @@ window.openUserModal = function() {
   window.calToday = function() { calDate = new Date(); renderCalendar(); };
   window.calClick = function(ds) { openNewEventModal(ds); };
 
-  // ---------- EVENT DETAIL & MODAL ----------
+  // ---------- EVENT MODAL ----------
   window.viewEvent = async function(id) {
     const ev = events.find(e => e.id === id);
     if (!ev) return;
@@ -777,17 +693,50 @@ window.openUserModal = function() {
             <button class="btn btn-ghost" style="padding:5px 9px;font-size:.76rem;margin-left:3px" onclick="editEvent('${e.id}')">✏️</button>
             <button class="btn btn-danger" style="padding:5px 9px;font-size:.76rem;margin-left:3px" onclick="deleteEvent('${e.id}')">🗑️</button>
           </td>
-        </tr>`).join('');
+        </table>`).join('');
     }
   }
 
-  // ---------- BENUTZER (vereinfacht) ----------
-  function renderUsers() {
-    document.getElementById('user-cards').innerHTML = '<div class="empty-state">Benutzerverwaltung über Firebase Console. Hier später erweiterbar.</div>';
+  // ---------- BENUTZERVERWALTUNG (ADMIN) ----------
+  async function renderUsers() {
+    if (currentUser.role !== 'admin') return;
+    const usersSnapshot = await getDocs(collection(db, "users"));
+    const usersList = usersSnapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
+    const container = document.getElementById('user-cards');
+    if (!usersList.length) {
+      container.innerHTML = '<div class="empty-state">Keine Benutzer gefunden.</div>';
+      return;
+    }
+    container.innerHTML = usersList.map(u => `
+      <div class="user-card">
+        <div class="avatar-lg" style="background:var(--accent)">${(u.displayName || u.email || u.uid).slice(0,2).toUpperCase()}</div>
+        <div class="u-name">${esc(u.displayName || u.email || u.uid)}</div>
+        <div class="u-role">${u.role === 'admin' ? '👑 Administrator' : '👤 Benutzer'}</div>
+        <div class="u-actions">
+          <button class="btn btn-ghost" style="font-size:.78rem;padding:5px 10px" onclick="editUser('${u.uid}')">✏️ Rolle ändern</button>
+          ${u.uid !== currentUser.uid ? `<button class="btn btn-danger" style="font-size:.78rem;padding:5px 10px" onclick="deleteUser('${u.uid}')">🗑️ Löschen</button>` : ''}
+        </div>
+      </div>
+    `).join('');
   }
-  window.openUserModal = function() { toast("Benutzerverwaltung nur über Firebase Console möglich."); };
+  window.editUser = async function(uid) {
+    const newRole = prompt('Neue Rolle (admin / user):', 'user');
+    if (!newRole || !['admin','user'].includes(newRole)) return toast('Ungültige Rolle');
+    await updateDoc(doc(db, "users", uid), { role: newRole });
+    toast(`✅ Rolle für ${uid} geändert`);
+    renderUsers();
+  };
+  window.deleteUser = async function(uid) {
+    if (!confirm('Benutzer unwiderruflich löschen?')) return;
+    await deleteDoc(doc(db, "users", uid));
+    toast('🗑️ Benutzer gelöscht');
+    renderUsers();
+  };
+  window.openUserModal = function() {
+    toast('Neue Benutzer nur über Firebase Authentication (Console) oder Registration möglich. Hier kannst du später die Rolle zuweisen.');
+  };
 
-  // ---------- EINSTELLUNGEN (Theme, Akzent) ----------
+  // ---------- EINSTELLUNGEN ----------
   window.setTheme = function(theme, el) {
     document.body.setAttribute('data-theme', theme === 'dark' ? '' : theme);
     document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('selected'));
@@ -834,10 +783,21 @@ window.openUserModal = function() {
     toast("🗑️ Alle Termine gelöscht");
   };
 
-  // ---------- AUTH STATUS ----------
-  onAuthStateChanged(auth, (user) => {
+  // ---------- AUTH STATUS (mit Rolle aus Firestore) ----------
+  onAuthStateChanged(auth, async (user) => {
     if (user) {
-      currentUser = { uid: user.uid, email: user.email, username: user.email.split('@')[0] };
+      console.log("✅ Eingeloggt mit UID:", user.uid);
+      currentUser = { uid: user.uid, email: user.email, username: user.email.split('@')[0], role: 'user' };
+      // Rolle aus Firestore laden
+      try {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists() && userDoc.data().role === 'admin') {
+          currentUser.role = 'admin';
+          console.log("👑 Admin-Rechte erteilt");
+        }
+      } catch (err) {
+        console.warn("Kein Rollendokument gefunden – Standardbenutzer");
+      }
       showApp();
       startEventsListener();
     } else {
