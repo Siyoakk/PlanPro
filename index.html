@@ -2,8 +2,8 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PlanPro – Synchronisiert</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>PlanPro – Erledigt‑Markierung</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -12,7 +12,7 @@
   --text: #e8e8f0; --text2: #9090a8; --text3: #5a5a72;
   --radius: 14px; --radius-sm: 8px;
   --font-head: 'DM Serif Display', serif; --font: 'DM Sans', sans-serif;
-  --sidebar-w: 240px; --shadow: 0 8px 32px rgba(0,0,0,0.4);
+  --sidebar-w: 260px; --shadow: 0 8px 32px rgba(0,0,0,0.4);
 }
 [data-theme="light"]  { --bg:#f0f0f7; --surface:#fff; --surface2:#f5f5fc; --border:#dddde8; --text:#1a1a2e; --text2:#5a5a78; --text3:#9090a8; --shadow:0 8px 32px rgba(108,99,255,.10); }
 [data-theme="ocean"]  { --bg:#071a2c; --surface:#0d2640; --surface2:#123356; --border:#1e4a70; --accent:#00c9ff; --accent2:#ff9a56; --accent3:#a0f0b0; --text:#d8f0ff; --text2:#7ab0cc; --text3:#3a6a88; }
@@ -35,26 +35,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); min-hei
 /* APP */
 #app { display:none; flex-direction:row; min-height:100vh; }
 
-/* SIDEBAR */
-#sidebar { width:var(--sidebar-w); background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; top:0; left:0; height:100vh; z-index:100; transition:transform .3s; overflow-y:auto; }
-.sidebar-logo { font-family:var(--font-head); font-size:1.7rem; color:var(--accent); padding:28px 24px 20px; border-bottom:1px solid var(--border); flex-shrink:0; }
-.sidebar-logo span { color:var(--text2); font-size:.75rem; display:block; font-family:var(--font); margin-top:2px; }
-.nav-section { padding:16px 12px 4px; font-size:.68rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text3); }
-.nav-item { display:flex; align-items:center; gap:10px; padding:10px 14px; margin:2px 8px; border-radius:var(--radius-sm); color:var(--text2); cursor:pointer; font-size:.9rem; font-weight:500; transition:background .15s,color .15s; user-select:none; }
-.nav-item:hover { background:var(--surface2); color:var(--text); }
-.nav-item.active { background:var(--accent); color:#fff; }
-.nav-item .icon { font-size:1.1rem; width:22px; text-align:center; }
-.sidebar-bottom { margin-top:auto; padding:12px; border-top:1px solid var(--border); flex-shrink:0; }
-.user-badge { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:var(--radius-sm); background:var(--surface2); }
-.avatar { width:34px; height:34px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.9rem; color:#fff; flex-shrink:0; }
-.user-info { flex:1; min-width:0; }
-.user-name { font-weight:600; font-size:.85rem; color:var(--text); }
-.user-role { font-size:.72rem; color:var(--text3); }
-.sidebar-logout-btn { display:flex; align-items:center; gap:8px; width:calc(100% - 16px); margin:8px 8px 0; padding:10px 14px; border-radius:var(--radius-sm); border:none; background:rgba(255,101,132,.1); color:var(--accent2); font-family:var(--font); font-size:.88rem; font-weight:600; cursor:pointer; transition:background .15s; }
-.sidebar-logout-btn:hover { background:rgba(255,101,132,.2); }
-.sidebar-logout-btn .icon { font-size:1rem; width:22px; text-align:center; }
-  
-  /* SIDEBAR – jetzt auch mobil scrollbar */
+/* SIDEBAR – scrollbar */
 #sidebar { width:var(--sidebar-w); background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; top:0; left:0; height:100vh; z-index:100; transition:transform .3s; overflow-y:auto; overflow-x:hidden; }
 .sidebar-logo { font-family:var(--font-head); font-size:1.7rem; color:var(--accent); padding:28px 24px 20px; border-bottom:1px solid var(--border); flex-shrink:0; }
 .sidebar-logo span { color:var(--text2); font-size:.75rem; display:block; font-family:var(--font); margin-top:2px; }
@@ -111,6 +92,16 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); min-hei
 .empty-state { text-align:center; padding:48px 20px; color:var(--text3); font-size:.9rem; }
 .empty-state .ico { font-size:2.5rem; margin-bottom:12px; }
 
+/* Erledigte Termine (global) */
+.event-card.completed, .cal-event-pill.completed, tr.completed td {
+  opacity: 0.6;
+  filter: grayscale(0.3);
+  text-decoration: line-through;
+}
+.event-card.completed .event-title, tr.completed td:first-child {
+  text-decoration: line-through;
+}
+
 /* CALENDAR */
 .cal-header { display:flex; align-items:center; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
 .cal-header h2 { font-family:var(--font-head); font-size:1.4rem; flex:1; text-align:center; min-width:130px; }
@@ -128,6 +119,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); min-hei
 .cal-event-pill:hover { opacity:.75; }
 .cal-event-pill.c2 { background:var(--accent2); }
 .cal-event-pill.c3 { background:var(--accent3); color:#1a1a2e; }
+.cal-event-pill.completed { opacity:0.6; filter:grayscale(0.3); text-decoration:line-through; }
 
 /* EVENT DETAIL */
 .event-detail-header { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
@@ -137,19 +129,21 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); min-hei
 .detail-icon { font-size:1rem; width:22px; flex-shrink:0; margin-top:2px; }
 .detail-label { font-size:.72rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--text3); margin-bottom:3px; }
 .detail-val { font-size:.92rem; color:var(--text); }
-.detail-note-box { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; font-size:.88rem; color:var(--text2); min-height:52px; white-space:pre-wrap; line-height:1.5; }
+.detail-note-box { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; font-size:.88rem; color:var(--text2); min-height:60px; white-space:pre-wrap; word-break:break-word; line-height:1.5; }
 
 /* BOOKINGS */
 .filter-bar { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
 .filter-chip { padding:6px 14px; border-radius:99px; border:1px solid var(--border); background:var(--surface); color:var(--text2); font-size:.82rem; font-weight:500; cursor:pointer; transition:background .15s,color .15s; }
 .filter-chip.active { background:var(--accent); border-color:var(--accent); color:#fff; }
-.table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+.table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow-x:auto; }
 table { width:100%; border-collapse:collapse; }
 thead { background:var(--surface2); }
-th { padding:12px 16px; text-align:left; font-size:.75rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--text2); border-bottom:1px solid var(--border); }
+th { padding:12px 16px; text-align:left; font-size:.75rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--text2); border-bottom:1px solid var(--border); cursor:pointer; user-select:none; }
+th:hover { background:var(--border); }
 td { padding:13px 16px; border-bottom:1px solid var(--border); font-size:.88rem; vertical-align:middle; }
 tr:last-child td { border-bottom:none; }
 tr:hover td { background:var(--surface2); }
+tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-through; }
 .badge { display:inline-block; padding:3px 9px; border-radius:99px; font-size:.72rem; font-weight:600; }
 .badge-blue { background:rgba(108,99,255,.18); color:var(--accent); }
 .badge-pink { background:rgba(255,101,132,.18); color:var(--accent2); }
@@ -158,12 +152,13 @@ tr:hover td { background:var(--surface2); }
 /* MODAL */
 #modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; z-index:500; padding:16px; backdrop-filter:blur(4px); }
 #modal-overlay.open { display:flex; }
-.modal { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:32px; width:100%; max-width:480px; box-shadow:var(--shadow); animation:slideUp .22s ease; max-height:90vh; overflow-y:auto; }
+.modal { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:32px; width:100%; max-width:520px; box-shadow:var(--shadow); animation:slideUp .22s ease; max-height:90vh; overflow-y:auto; }
 @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 .modal h2 { font-family:var(--font-head); font-size:1.35rem; margin-bottom:22px; }
 .form-group { margin-bottom:16px; }
 .form-group label { display:block; font-size:.77rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--text2); margin-bottom:6px; }
 .form-group input,.form-group select,.form-group textarea { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; color:var(--text); font-family:var(--font); font-size:.9rem; outline:none; transition:border-color .2s; }
+.form-group textarea { resize:vertical; min-height:80px; }
 .form-group input:focus,.form-group select:focus,.form-group textarea:focus { border-color:var(--accent); }
 .form-group select option { background:var(--surface); }
 .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
@@ -176,16 +171,8 @@ tr:hover td { background:var(--surface2); }
 .theme-picker { display:flex; gap:10px; flex-wrap:wrap; }
 .theme-dot { width:36px; height:36px; border-radius:50%; cursor:pointer; border:3px solid transparent; transition:transform .15s,border-color .15s; }
 .theme-dot:hover { transform:scale(1.12); } .theme-dot.selected { border-color:var(--text); }
-.toggle-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); }
-.toggle-row:last-child { border-bottom:none; }
-.toggle-label { font-size:.9rem; }
-.toggle { width:42px; height:24px; background:var(--border); border-radius:99px; position:relative; cursor:pointer; transition:background .2s; }
-.toggle.on { background:var(--accent); }
-.toggle::after { content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; transition:transform .2s; }
-.toggle.on::after { transform:translateX(18px); }
-.color-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:4px; }
-.accent-swatch { width:30px; height:30px; border-radius:50%; cursor:pointer; border:3px solid transparent; transition:transform .15s; }
-.accent-swatch:hover { transform:scale(1.15); } .accent-swatch.selected { border-color:var(--text); }
+.security-panel { background:var(--surface2); border-radius:var(--radius); padding:16px; margin-top:12px; }
+.security-panel input { margin-bottom:12px; }
 
 /* USERS */
 .user-cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; }
@@ -224,8 +211,6 @@ tr:hover td { background:var(--surface2); }
   .settings-grid { grid-template-columns:1fr; }
   .user-cards { grid-template-columns:repeat(2,1fr); }
   .modal { padding:22px 18px; }
-  .table-wrap { overflow-x:auto; }
-  .hide-mobile { display:none !important; }
   .btn { padding:8px 12px; font-size:.82rem; }
 }
 @media (max-width:400px) {
@@ -238,24 +223,6 @@ tr:hover td { background:var(--surface2); }
 ::-webkit-scrollbar { width:6px; height:6px; }
 ::-webkit-scrollbar-track { background:transparent; }
 ::-webkit-scrollbar-thumb { background:var(--border); border-radius:99px; }
-  /* Erledigte Termine */
-.event-completed, .event-card.completed, .cal-event-pill.completed {
-  opacity: 0.6;
-  filter: grayscale(0.5);
-  text-decoration: line-through;
-}
-.event-completed .event-title, .event-card.completed .event-title {
-  text-decoration: line-through;
-}
-/* In Buchungstabelle */
-tr.completed td {
-  opacity: 0.6;
-  filter: grayscale(0.3);
-  text-decoration: line-through;
-}
-.cal-event-pill.completed {
-  text-decoration: line-through;
-}
 </style>
 </head>
 <body>
@@ -340,14 +307,14 @@ tr.completed td {
         <table>
           <thead>
             <tr>
-            <th onclick="sortBookings('title')">Titel</th>
-            <th onclick="sortBookings('date')">Datum</th>
-            <th onclick="sortBookings('time')">Zeit</th>
-            <th onclick="sortBookings('category')">Kategorie</th>
-            <th class="hide-mobile" onclick="sortBookings('note')">Notiz</th>
-            <th>Aktionen</th>
-          </tr>
-        </thead>
+              <th onclick="sortBookings('title')">Titel</th>
+              <th onclick="sortBookings('date')">Datum</th>
+              <th onclick="sortBookings('time')">Zeit</th>
+              <th onclick="sortBookings('category')">Kategorie</th>
+              <th class="hide-mobile" onclick="sortBookings('note')">Notiz</th>
+              <th>Aktionen</th>
+            </tr>
+          </thead>
           <tbody id="bookings-tbody"></tbody>
         </table>
       </div>
@@ -398,6 +365,7 @@ tr.completed td {
             <button class="btn btn-primary" onclick="changeAccount()">Änderungen speichern</button>
           </div>
         </div>
+        <div class="settings-card">
           <h3>🖥️ Darstellung</h3>
           <div class="toggle-row"><span class="toggle-label">Kompakte Ansicht</span><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
           <div class="toggle-row"><span class="toggle-label">Animationen</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
@@ -426,10 +394,9 @@ tr.completed td {
 <div id="toast"></div>
 
 <script type="module">
-  // ---------- FIREBASE IMPORTE ----------
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
   import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, where, onSnapshot, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword, updateEmail, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyD6OKm3jYYsZWhVyTmhDvHJ0EeDMT2RzXs",
@@ -446,7 +413,6 @@ tr.completed td {
   const db = getFirestore(app);
   const auth = getAuth(app);
 
-  // Globale Referenzen (für nicht-Modul-Funktionen)
   window.db = db;
   window.addDoc = addDoc;
   window.updateDoc = updateDoc;
@@ -461,8 +427,8 @@ tr.completed td {
   let currentPage = 'dashboard';
   let events = [];
   let eventsUnsubscribe = null;
-  let sortField = 'date';      // Standard-Sortierung nach Datum
-  let sortDirection = 'asc';   // 'asc' oder 'desc'
+  let sortField = 'date';
+  let sortDirection = 'asc';
   const SETTINGS_KEY = 'planpro_settings';
 
   // ---------- HILFSFUNKTIONEN ----------
@@ -524,6 +490,43 @@ tr.completed td {
     closeModal();
   };
 
+  // ---------- PASSWORT / E-MAIL ÄNDERN ----------
+  window.changeAccount = async function() {
+    const newUsername = document.getElementById('new-username').value.trim();
+    const oldPwd = document.getElementById('old-password').value;
+    const newPwd = document.getElementById('new-password').value;
+    const confirmPwd = document.getElementById('confirm-password').value;
+    if (!oldPwd) { toast("Bitte altes Passwort eingeben"); return; }
+    if (newPwd !== confirmPwd) { toast("Neue Passwörter stimmen nicht überein"); return; }
+    const user = auth.currentUser;
+    if (!user) { toast("Nicht angemeldet"); return; }
+
+    const credential = EmailAuthProvider.credential(user.email, oldPwd);
+    try {
+      await reauthenticateWithCredential(user, credential);
+      if (newUsername && newUsername !== user.email.split('@')[0]) {
+        const newEmail = newUsername + "@planpro.local";
+        await updateEmail(user, newEmail);
+        toast("✅ Benutzername geändert! Bitte neu anmelden.");
+        setTimeout(() => signOut(auth), 1500);
+        return;
+      }
+      if (newPwd) {
+        await updatePassword(user, newPwd);
+        toast("✅ Passwort geändert! Bitte neu anmelden.");
+        setTimeout(() => signOut(auth), 1500);
+      } else {
+        toast("Keine Änderungen vorgenommen.");
+      }
+      document.getElementById('old-password').value = '';
+      document.getElementById('new-password').value = '';
+      document.getElementById('confirm-password').value = '';
+      document.getElementById('new-username').value = '';
+    } catch (err) {
+      toast("Fehler: " + err.message);
+    }
+  };
+
   // ---------- APP ANZEIGEN ----------
   function showLogin() {
     document.getElementById('login-screen').style.display = 'flex';
@@ -538,7 +541,6 @@ tr.completed td {
     document.getElementById('sb-user-label').textContent = 'Angemeldet als ' + displayName;
     document.getElementById('profile-name').value = displayName;
     document.getElementById('profile-email').value = currentUser.email;
-    // Admin-Menüpunkt ein-/ausblenden
     const navUsers = document.getElementById('nav-users');
     if (currentUser.role === 'admin') navUsers.style.display = 'flex';
     else navUsers.style.display = 'none';
@@ -553,22 +555,27 @@ tr.completed td {
     if (!currentUser || !currentUser.uid) return;
     const q = query(collection(db, "events"), where("userId", "==", currentUser.uid));
     eventsUnsubscribe = onSnapshot(q, (snapshot) => {
-      events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      events = snapshot.docs.map(doc => ({ 
+        id: doc.id, 
+        ...doc.data(),
+        completed: doc.data().completed || false
+      }));
       if (currentPage === 'dashboard') renderDashboard();
       if (currentPage === 'calendar')  renderCalendar();
       if (currentPage === 'bookings')  renderBookings();
     });
   }
+
+  // ---------- SORTIERUNG ----------
   window.sortBookings = function(field) {
-  // Wenn gleiches Feld: Richtung umdrehen, sonst aufsteigend
-  if (sortField === field) {
-    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-  } else {
-    sortField = field;
-    sortDirection = 'asc';
-  }
-  renderBookings();  // Neu sortieren und anzeigen
-};
+    if (sortField === field) {
+      sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      sortField = field;
+      sortDirection = 'asc';
+    }
+    renderBookings();
+  };
 
   // ---------- NAVIGATION ----------
   const pageTitles = { dashboard:'Dashboard', calendar:'Kalender', bookings:'Alle Buchungen', users:'Benutzerverwaltung', settings:'Einstellungen' };
@@ -582,7 +589,7 @@ tr.completed td {
     if (idx >= 0) document.querySelectorAll('.nav-item')[idx].classList.add('active');
     document.getElementById('page-title').textContent = pageTitles[page] || page;
     closeSidebar();
-    if (page === 'dashboard') ();
+    if (page === 'dashboard') renderDashboard();
     if (page === 'calendar')  renderCalendar();
     if (page === 'bookings')  renderBookings();
     if (page === 'users')     renderUsers();
@@ -603,10 +610,10 @@ tr.completed td {
       const colors = ['','c2','c3'];
       el.innerHTML = todayEvs.sort((a,b)=>a.time.localeCompare(b.time)).map(e => `
         <div class="event-card ${e.completed ? 'completed' : ''}" onclick="viewEvent('${e.id}')">
-        <div class="event-dot ${colors[e.color||0]}"></div>
-        <div class="event-info"><div class="event-title">${esc(e.title)}</div><div class="event-meta">${esc(e.category)}${e.note ? ' · '+esc(e.note) : ''}</div></div>
-        <div class="event-time">${esc(e.time)}</div>
-      </div>`).join('');
+          <div class="event-dot ${colors[e.color||0]}"></div>
+          <div class="event-info"><div class="event-title">${esc(e.title)}</div><div class="event-meta">${esc(e.category)}${e.note ? ' · '+esc(e.note) : ''}</div></div>
+          <div class="event-time">${esc(e.time)}</div>
+        </div>`).join('');
     }
   }
 
@@ -645,7 +652,14 @@ tr.completed td {
   window.calToday = function() { calDate = new Date(); renderCalendar(); };
   window.calClick = function(ds) { openNewEventModal(ds); };
 
-  // ---------- EVENT MODAL ----------
+  // ---------- EVENT MODAL & TOGGLE COMPLETED ----------
+  window.toggleCompleted = async function(id) {
+    const ev = events.find(e => e.id === id);
+    if (!ev) return;
+    await updateDoc(doc(db, "events", id), { completed: !ev.completed });
+    toast(ev.completed ? "Termin als offen markiert" : "Termin als erledigt markiert");
+  };
+
   window.viewEvent = async function(id) {
     const ev = events.find(e => e.id === id);
     if (!ev) return;
@@ -665,14 +679,16 @@ tr.completed td {
       </div>
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal()">Schließen</button>
+        <button class="btn btn-ghost" onclick="toggleCompleted('${ev.id}');closeModal()">${ev.completed ? '✖️ Als offen markieren' : '✅ Als erledigt markieren'}</button>
         <button class="btn btn-primary" onclick="editEvent('${ev.id}')">✏️ Bearbeiten</button>
         <button class="btn btn-danger" onclick="deleteEvent('${ev.id}');closeModal()">🗑️ Löschen</button>
       </div>`;
     openModal();
   };
+
   window.openNewEventModal = function(date = '') {
     editingEventId = null;
-    showEventModal({ title:'', date: date || todayStr(), time:'09:00', category:'Arbeit', note:'', color:0 }, false);
+    showEventModal({ title:'', date: date || todayStr(), time:'09:00', category:'Arbeit', note:'', color:0, completed: false }, false);
   };
   window.editEvent = async function(id) {
     const ev = events.find(e => e.id === id);
@@ -692,14 +708,14 @@ tr.completed td {
       </div>
       <div class="form-row">
         <div class="form-group"><label>Kategorie</label><select id="ev-cat">${catOpts}</select></div>
-        <div class="form-group"><label>Farbe</label><select id="ev-color">c</select></div>
+        <div class="form-group"><label>Farbe</label><select id="ev-color">${colorOpts}</select></div>
       </div>
-      <div class="form-group"><label>Notiz</label><textarea id="ev-note" rows="3">${esc(ev.note || '')}</textarea></div>
+      <div class="form-group"><label>Notiz</label><textarea id="ev-note" rows="3" style="resize:vertical; min-height:80px;">${esc(ev.note || '')}</textarea></div>
       <div class="form-group">
-      <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-      <input type="checkbox" id="ev-completed" ${ev.completed ? 'checked' : ''}> Erledigt
-      </label>
-    </div>
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+          <input type="checkbox" id="ev-completed" ${ev.completed ? 'checked' : ''}> Erledigt
+        </label>
+      </div>
       <div class="modal-actions">
         ${isEdit ? `<button class="btn btn-danger" onclick="deleteEvent('${editingEventId}');closeModal()">🗑️ Löschen</button>` : ''}
         <button class="btn btn-ghost" onclick="closeModal()">Abbrechen</button>
@@ -718,7 +734,7 @@ tr.completed td {
       category: document.getElementById('ev-cat').value,
       note: document.getElementById('ev-note').value.trim(),
       color: parseInt(document.getElementById('ev-color').value) || 0,
-      completed: document.getElementById('ev-completed').checked,  // neu
+      completed: document.getElementById('ev-completed').checked,
       userId: currentUser.uid
     };
     try {
@@ -746,67 +762,51 @@ tr.completed td {
     renderBookings();
   };
   function renderBookings() {
-  let filtered = events;
-  if (bookingFilter !== 'all') {
-    filtered = filtered.filter(e => e.category === bookingFilter);
+    let filtered = events;
+    if (bookingFilter !== 'all') filtered = filtered.filter(e => e.category === bookingFilter);
+
+    filtered.sort((a, b) => {
+      let valA = a[sortField];
+      let valB = b[sortField];
+      if (sortField === 'date') {
+        valA = a.date + ' ' + a.time;
+        valB = b.date + ' ' + b.time;
+      }
+      if (sortField === 'note') {
+        valA = valA || '';
+        valB = valB || '';
+      }
+      if (sortField === 'time') {
+        valA = valA || '00:00';
+        valB = valB || '00:00';
+      }
+      if (typeof valA === 'string') valA = valA.toLowerCase();
+      if (typeof valB === 'string') valB = valB.toLowerCase();
+      if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+      if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    const catBadge = { 'Arbeit':'badge-blue', 'Meeting':'badge-green', 'Privat':'badge-pink', 'Sonstiges':'badge-blue' };
+    const tbody = document.getElementById('bookings-tbody');
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3)">Keine Buchungen</td></tr>';
+    } else {
+      tbody.innerHTML = filtered.map(e => `
+        <tr class="${e.completed ? 'completed' : ''}">
+          <td style="cursor:pointer;font-weight:600" onclick="viewEvent('${e.id}')">${esc(e.title)}</td>
+          <td>${formatDate(e.date)}</td>
+          <td>${esc(e.time)}</td>
+          <td><span class="badge ${catBadge[e.category] || 'badge-blue'}">${esc(e.category)}</span></td>
+          <td class="hide-mobile">${esc(e.note || '—')}</td>
+          <td style="white-space:nowrap">
+            <button class="btn btn-ghost" style="padding:5px 9px;font-size:.76rem" onclick="viewEvent('${e.id}')">👁️</button>
+            <button class="btn btn-ghost" style="padding:5px 9px;font-size:.76rem;margin-left:3px" onclick="editEvent('${e.id}')">✏️</button>
+            <button class="btn btn-danger" style="padding:5px 9px;font-size:.76rem;margin-left:3px" onclick="deleteEvent('${e.id}')">🗑️</button>
+          </td>
+        </tr>`).join('');
+    }
   }
-
-  // ----- Sortierung anwenden -----
-  filtered.sort((a, b) => {
-    let valA = a[sortField];
-    let valB = b[sortField];
-
-    // Spezialbehandlung für Datum + Uhrzeit (zuerst Datum, dann Zeit)
-    if (sortField === 'date') {
-      valA = a.date + ' ' + a.time;
-      valB = b.date + ' ' + b.time;
-    }
-    // Bei Notiz-Feld: leere Strings als kleinster Wert behandeln
-    if (sortField === 'note') {
-      valA = valA || '';
-      valB = valB || '';
-    }
-    // Bei Zeit: einfache lexikalische Sortierung reicht (HH:MM)
-    if (sortField === 'time') {
-      valA = valA || '00:00';
-      valB = valB || '00:00';
-    }
-
-    if (typeof valA === 'string') valA = valA.toLowerCase();
-    if (typeof valB === 'string') valB = valB.toLowerCase();
-
-    if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
-    if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
-    return 0;
-  });
-
-  const catBadge = { 'Arbeit':'badge-blue', 'Meeting':'badge-green', 'Privat':'badge-pink', 'Sonstiges':'badge-blue' };
-  const tbody = document.getElementById('bookings-tbody');
-
-  if (!filtered.length) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3)">Keine Buchungen</td></tr>';
-  } else {
-    tbody.innerHTML = filtered.map(e => `
-      <tr class="${e.completed ? 'completed' : ''}">
-        <td style="cursor:pointer;font-weight:600" onclick="viewEvent('${e.id}')">${esc(e.title)}</td>
-        <td>${formatDate(e.date)}</td>
-        <td>${esc(e.time)}</td>
-        <td><span class="badge ${catBadge[e.category] || 'badge-blue'}">${esc(e.category)}</span></td>
-        <td class="hide-mobile">${esc(e.note || '—')}</td>
-        <td style="white-space:nowrap">
-          <button class="btn btn-ghost" style="padding:5px 9px;font-size:.76rem" onclick="viewEvent('${e.id}')">👁️</button>
-          <button class="btn btn-ghost" style="padding:5px 9px;font-size:.76rem;margin-left:3px" onclick="editEvent('${e.id}')">✏️</button>
-          <button class="btn btn-danger" style="padding:5px 9px;font-size:.76rem;margin-left:3px" onclick="deleteEvent('${e.id}')">🗑️</button>
-      </td>
-    </tr>
-`).join('');
-}
-  window.toggleCompleted = async function(id) {
-  const ev = events.find(e => e.id === id);
-  if (!ev) return;
-  await updateDoc(doc(db, "events", id), { completed: !ev.completed });
-  toast(ev.completed ? "Termin als offen markiert" : "Termin als erledigt markiert");
-};
 
   // ---------- BENUTZERVERWALTUNG (ADMIN) ----------
   async function renderUsers() {
@@ -899,7 +899,6 @@ tr.completed td {
     if (user) {
       console.log("✅ Eingeloggt mit UID:", user.uid);
       currentUser = { uid: user.uid, email: user.email, username: user.email.split('@')[0], role: 'user' };
-      // Rolle aus Firestore laden
       try {
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists() && userDoc.data().role === 'admin') {
