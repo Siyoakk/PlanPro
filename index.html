@@ -301,7 +301,16 @@ tr:hover td { background:var(--surface2); }
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Titel</th><th>Datum</th><th>Zeit</th><th>Kategorie</th><th class="hide-mobile">Notiz</th><th>Aktionen</th></tr></thead>
+          <thead>
+            <tr>
+            <th onclick="sortBookings('title')">Titel</th>
+            <th onclick="sortBookings('date')">Datum</th>
+            <th onclick="sortBookings('time')">Zeit</th>
+            <th onclick="sortBookings('category')">Kategorie</th>
+            <th class="hide-mobile" onclick="sortBookings('note')">Notiz</th>
+            <th>Aktionen</th>
+          </tr>
+        </thead>
           <tbody id="bookings-tbody"></tbody>
         </table>
       </div>
@@ -415,6 +424,8 @@ tr:hover td { background:var(--surface2); }
   let currentPage = 'dashboard';
   let events = [];
   let eventsUnsubscribe = null;
+  let sortField = 'date';      // Standard-Sortierung nach Datum
+  let sortDirection = 'asc';   // 'asc' oder 'desc'
   const SETTINGS_KEY = 'planpro_settings';
 
   // ---------- HILFSFUNKTIONEN ----------
@@ -511,6 +522,16 @@ tr:hover td { background:var(--surface2); }
       if (currentPage === 'bookings')  renderBookings();
     });
   }
+  window.sortBookings = function(field) {
+  // Wenn gleiches Feld: Richtung umdrehen, sonst aufsteigend
+  if (sortField === field) {
+    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortField = field;
+    sortDirection = 'asc';
+  }
+  renderBookings();  // Neu sortieren und anzeigen
+};
 
   // ---------- NAVIGATION ----------
   const pageTitles = { dashboard:'Dashboard', calendar:'Kalender', bookings:'Alle Buchungen', users:'Benutzerverwaltung', settings:'Einstellungen' };
@@ -682,29 +703,61 @@ tr:hover td { background:var(--surface2); }
     renderBookings();
   };
   function renderBookings() {
-    let filtered = events;
-    if (bookingFilter !== 'all') filtered = filtered.filter(e => e.category === bookingFilter);
-    filtered.sort((a,b) => (a.date + a.time).localeCompare(b.date + b.time));
-    const catBadge = { 'Arbeit':'badge-blue', 'Meeting':'badge-green', 'Privat':'badge-pink', 'Sonstiges':'badge-blue' };
-    const tbody = document.getElementById('bookings-tbody');
-    if (!filtered.length) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3)">Keine Buchungen</td></tr>';
-    } else {
-      tbody.innerHTML = filtered.map(e => `
-        <tr>
-          <td style="cursor:pointer;font-weight:600" onclick="viewEvent('${e.id}')">${esc(e.title)}</td>
-          <td>${formatDate(e.date)}</td>
-          <td>${esc(e.time)}</td>
-          <td><span class="badge ${catBadge[e.category] || 'badge-blue'}">${esc(e.category)}</span></td>
-          <td class="hide-mobile">${esc(e.note || '—')}</td>
-          <td style="white-space:nowrap">
-            <button class="btn btn-ghost" style="padding:5px 9px;font-size:.76rem" onclick="viewEvent('${e.id}')">👁️</button>
-            <button class="btn btn-ghost" style="padding:5px 9px;font-size:.76rem;margin-left:3px" onclick="editEvent('${e.id}')">✏️</button>
-            <button class="btn btn-danger" style="padding:5px 9px;font-size:.76rem;margin-left:3px" onclick="deleteEvent('${e.id}')">🗑️</button>
-          </td>
-        </table>`).join('');
-    }
+  let filtered = events;
+  if (bookingFilter !== 'all') {
+    filtered = filtered.filter(e => e.category === bookingFilter);
   }
+
+  // ----- Sortierung anwenden -----
+  filtered.sort((a, b) => {
+    let valA = a[sortField];
+    let valB = b[sortField];
+
+    // Spezialbehandlung für Datum + Uhrzeit (zuerst Datum, dann Zeit)
+    if (sortField === 'date') {
+      valA = a.date + ' ' + a.time;
+      valB = b.date + ' ' + b.time;
+    }
+    // Bei Notiz-Feld: leere Strings als kleinster Wert behandeln
+    if (sortField === 'note') {
+      valA = valA || '';
+      valB = valB || '';
+    }
+    // Bei Zeit: einfache lexikalische Sortierung reicht (HH:MM)
+    if (sortField === 'time') {
+      valA = valA || '00:00';
+      valB = valB || '00:00';
+    }
+
+    if (typeof valA === 'string') valA = valA.toLowerCase();
+    if (typeof valB === 'string') valB = valB.toLowerCase();
+
+    if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+    if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const catBadge = { 'Arbeit':'badge-blue', 'Meeting':'badge-green', 'Privat':'badge-pink', 'Sonstiges':'badge-blue' };
+  const tbody = document.getElementById('bookings-tbody');
+
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3)">Keine Buchungen</td></tr>';
+  } else {
+    tbody.innerHTML = filtered.map(e => `
+      <tr>
+        <td style="cursor:pointer;font-weight:600" onclick="viewEvent('${e.id}')">${esc(e.title)}</td>
+        <td>${formatDate(e.date)}</td>
+        <td>${esc(e.time)}</td>
+        <td><span class="badge ${catBadge[e.category] || 'badge-blue'}">${esc(e.category)}</span></td>
+        <td class="hide-mobile">${esc(e.note || '—')}</td>
+        <td style="white-space:nowrap">
+          <button class="btn btn-ghost" style="padding:5px 9px;font-size:.76rem" onclick="viewEvent('${e.id}')">👁️</button>
+          <button class="btn btn-ghost" style="padding:5px 9px;font-size:.76rem;margin-left:3px" onclick="editEvent('${e.id}')">✏️</button>
+          <button class="btn btn-danger" style="padding:5px 9px;font-size:.76rem;margin-left:3px" onclick="deleteEvent('${e.id}')">🗑️</button>
+        </td>
+      </tr>`).join('');
+  }
+}
 
   // ---------- BENUTZERVERWALTUNG (ADMIN) ----------
   async function renderUsers() {
