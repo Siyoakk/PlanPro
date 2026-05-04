@@ -790,7 +790,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       </div>
       <div class="form-row">
         <div class="form-group"><label>Uhrzeit Von</label><input type="time" id="ev-time" value="${ev.time}"></div>
-        <div class="form-group"><label>Uhrzeit Bis</label><input type="time" id="ev-time-end" value="${ev.timeEnd || \'\'}"></div>
+        <div class="form-group"><label>Uhrzeit Bis</label><input type="time" id="ev-time-end" value="${ev.timeEnd || ''}"></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>Kategorie</label><select id="ev-cat">${catOpts}</select></div>
