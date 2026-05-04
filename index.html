@@ -16,7 +16,15 @@
 }
 [data-theme="light"]  { --bg:#f0f0f7; --surface:#fff; --surface2:#f5f5fc; --border:#dddde8; --text:#1a1a2e; --text2:#5a5a78; --text3:#9090a8; --shadow:0 8px 32px rgba(108,99,255,.10); }
 [data-theme="ocean"]  { --bg:#071a2c; --surface:#0d2640; --surface2:#123356; --border:#1e4a70; --accent:#00c9ff; --accent2:#ff9a56; --accent3:#a0f0b0; --text:#d8f0ff; --text2:#7ab0cc; --text3:#3a6a88; }
+[data-theme="ocean"][data-accent="1"]  { --accent:#f7931e; --accent2:#e74c3c; --accent3:#f0e68c; }
+[data-theme="ocean"][data-accent="2"]  { --accent:#e91e8c; --accent2:#ff9a56; --accent3:#b0f0ff; }
+[data-theme="ocean"][data-accent="3"]  { --accent:#2ecc71; --accent2:#f39c12; --accent3:#74b9ff; }
+[data-theme="ocean"][data-accent="4"]  { --accent:#00bcd4; --accent2:#ff5722; --accent3:#a0f080; }
 [data-theme="forest"] { --bg:#0c1f0e; --surface:#152818; --surface2:#1d3620; --border:#2a4a2e; --accent:#5cdb95; --accent2:#f7b731; --accent3:#74b9ff; --text:#d8f5dc; --text2:#7ab87e; --text3:#3a6a3e; }
+[data-theme="forest"][data-accent="1"]  { --accent:#f7931e; --accent2:#e74c3c; --accent3:#f0e68c; }
+[data-theme="forest"][data-accent="2"]  { --accent:#e91e8c; --accent2:#ff9a56; --accent3:#b0f0ff; }
+[data-theme="forest"][data-accent="3"]  { --accent:#2ecc71; --accent2:#f39c12; --accent3:#74b9ff; }
+[data-theme="forest"][data-accent="4"]  { --accent:#00bcd4; --accent2:#ff5722; --accent3:#a0f080; }
 * { box-sizing:border-box; margin:0; padding:0; }
 body { background:var(--bg); color:var(--text); font-family:var(--font); min-height:100vh; transition:background .3s,color .3s; }
 
@@ -218,10 +226,10 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
   .cal-header { gap:5px; }
   .cal-header h2 { font-size:1rem; min-width:90px; }
   .cal-date-jump { font-size:.75rem; padding:6px 7px; }
-  .cal-cell { min-height:52px; padding:4px 3px; }
+  .cal-cell { min-height:60px; padding:4px 3px; }
   .cal-cell .day-num { font-size:.7rem; }
-  .cal-event-pill { display:none; }
-  .cal-cell.has-events::after { content:'•'; color:var(--accent); font-size:1.2rem; display:block; text-align:center; line-height:1.2; }
+  .cal-event-pill { font-size:.6rem; padding:1px 3px; margin-bottom:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .cal-cell .day-num { margin-bottom:2px; }
   .form-row { grid-template-columns:1fr; }
   .filter-bar { gap:6px; }
   table { font-size:.8rem; }
@@ -359,11 +367,11 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
           </div>
           <h3 style="margin-top:24px;">🔵 Akzentfarbe</h3>
           <div class="color-row">
-            <div class="accent-swatch selected" style="background:#6c63ff" onclick="setAccent('#6c63ff','#ff6584','#43e8d8',this)"></div>
-            <div class="accent-swatch" style="background:#f7931e" onclick="setAccent('#f7931e','#e74c3c','#f0e68c',this)"></div>
-            <div class="accent-swatch" style="background:#e91e8c" onclick="setAccent('#e91e8c','#ff9a56','#b0f0ff',this)"></div>
-            <div class="accent-swatch" style="background:#2ecc71" onclick="setAccent('#2ecc71','#f39c12','#74b9ff',this)"></div>
-            <div class="accent-swatch" style="background:#00bcd4" onclick="setAccent('#00bcd4','#ff5722','#a0f080',this)"></div>
+            <div class="accent-swatch selected" style="background:#6c63ff" onclick="setAccent(0,this)"></div>
+            <div class="accent-swatch" style="background:#f7931e" onclick="setAccent(1,this)"></div>
+            <div class="accent-swatch" style="background:#e91e8c" onclick="setAccent(2,this)"></div>
+            <div class="accent-swatch" style="background:#2ecc71" onclick="setAccent(3,this)"></div>
+            <div class="accent-swatch" style="background:#00bcd4" onclick="setAccent(4,this)"></div>
           </div>
         </div>
 
@@ -687,7 +695,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
         <div class="event-card ${e.completed ? 'completed' : ''}" onclick="viewEvent('${e.id}')">
           <div class="event-dot ${colors[e.color||0]}"></div>
           <div class="event-info"><div class="event-title">${esc(e.title)}</div><div class="event-meta">${esc(e.category)}${e.note ? ' · '+esc(e.note) : ''}</div></div>
-          <div class="event-time">${esc(e.time)}</div>
+          <div class="event-time">${esc(e.time)}${e.timeEnd ? ' – ' + esc(e.timeEnd) : ''}</div>
         </div>`).join('');
     }
   }
@@ -715,7 +723,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
   }
   function cellHtml(dayNum, ds, dayEvs, colMap, otherMonth, today) {
     const isToday = ds === today;
-    const pills = dayEvs.slice(0,3).map(e => `<div class="cal-event-pill ${colMap[e.color||0]} ${e.completed ? 'completed' : ''}" onclick="viewEvent('${e.id}');event.stopPropagation()">${esc(e.title)}</div>`).join('');
+    const pills = dayEvs.slice(0,2).map(e => `<div class="cal-event-pill ${colMap[e.color||0]} ${e.completed ? 'completed' : ''}" onclick="viewEvent('${e.id}');event.stopPropagation()">${esc(e.title)}</div>`).join('');
     const more = dayEvs.length > 3 ? `<div style="font-size:.64rem;color:var(--text3)">+${dayEvs.length-3} weitere</div>` : '';
     return `<div class="cal-cell${otherMonth ? ' other-month' : ''}${isToday ? ' today' : ''}${dayEvs.length ? ' has-events' : ''}" onclick="calClick('${ds}')">
               <div class="day-num">${dayNum}</div>${pills}${more}
@@ -746,7 +754,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
         <h2 style="margin:0;font-size:1.4rem">${esc(ev.title)}</h2>
       </div>
       <div class="detail-row"><div class="detail-icon">📅</div><div><div class="detail-label">Datum</div><div class="detail-val">${formatDate(ev.date)}</div></div></div>
-      <div class="detail-row"><div class="detail-icon">🕐</div><div><div class="detail-label">Uhrzeit</div><div class="detail-val">${esc(ev.time)} Uhr</div></div></div>
+      <div class="detail-row"><div class="detail-icon">🕐</div><div><div class="detail-label">Uhrzeit</div><div class="detail-val">${esc(ev.time)} Uhr${ev.timeEnd ? ' – ' + esc(ev.timeEnd) + ' Uhr' : ''}</div></div></div>
       <div class="detail-row"><div class="detail-icon">🏷️</div><div><div class="detail-label">Kategorie</div><div class="detail-val"><span class="badge ${catBadge[ev.category] || 'badge-blue'}">${esc(ev.category)}</span></div></div></div>
       <div class="detail-row" style="flex-direction:column;gap:6px">
         <div style="display:flex;gap:8px;align-items:center"><div class="detail-icon">📝</div><div class="detail-label">Notiz</div></div>
@@ -779,7 +787,10 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       <div class="form-group"><label>Titel</label><input type="text" id="ev-title" value="${esc(ev.title)}" placeholder="Termintitel"></div>
       <div class="form-row">
         <div class="form-group"><label>Datum</label><input type="date" id="ev-date" value="${ev.date}"></div>
-        <div class="form-group"><label>Uhrzeit</label><input type="time" id="ev-time" value="${ev.time}"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Uhrzeit Von</label><input type="time" id="ev-time" value="${ev.time}"></div>
+        <div class="form-group"><label>Uhrzeit Bis</label><input type="time" id="ev-time-end" value="${ev.timeEnd || \'\'}"></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>Kategorie</label><select id="ev-cat">${catOpts}</select></div>
@@ -802,6 +813,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       title,
       date: document.getElementById('ev-date').value,
       time: document.getElementById('ev-time').value,
+      timeEnd: document.getElementById('ev-time-end').value || '',
       category: document.getElementById('ev-cat').value,
       note: document.getElementById('ev-note').value.trim(),
       color: parseInt(document.getElementById('ev-color').value) || 0,
@@ -856,7 +868,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
         <tr class="${e.completed ? 'completed' : ''}">
           <td style="cursor:pointer;font-weight:600" onclick="viewEvent('${e.id}')">${esc(e.title)}</td>
           <td>${formatDate(e.date)}</td>
-          <td>${esc(e.time)}</td>
+          <td>${esc(e.time)}${e.timeEnd ? ' – ' + esc(e.timeEnd) : ''}</td>
           <td><span class="badge ${catBadge[e.category] || 'badge-blue'}">${esc(e.category)}</span></td>
           <td class="hide-mobile">${esc(e.note || '—')}</td>
           <td style="white-space:nowrap">
@@ -915,26 +927,61 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
     settings.theme = theme;
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    // Re-apply accent so inline vars are updated/cleared correctly for new theme
+    applySettings();
     toast("🎨 Theme geändert");
   };
-  window.setAccent = function(a1, a2, a3, el) {
-    document.documentElement.style.setProperty('--accent', a1);
-    document.documentElement.style.setProperty('--accent2', a2);
-    document.documentElement.style.setProperty('--accent3', a3);
+  window.setAccent = function(idx, el) {
+    document.body.setAttribute('data-accent', idx === 0 ? '' : String(idx));
+    // For dark/light themes, also set inline CSS vars (since no data-accent CSS rules exist for them)
+    const accentSets = [
+      ['#6c63ff','#ff6584','#43e8d8'],
+      ['#f7931e','#e74c3c','#f0e68c'],
+      ['#e91e8c','#ff9a56','#b0f0ff'],
+      ['#2ecc71','#f39c12','#74b9ff'],
+      ['#00bcd4','#ff5722','#a0f080'],
+    ];
+    const theme = document.body.getAttribute('data-theme') || '';
+    if (!theme || theme === 'light') {
+      const [a1,a2,a3] = accentSets[idx];
+      document.documentElement.style.setProperty('--accent', a1);
+      document.documentElement.style.setProperty('--accent2', a2);
+      document.documentElement.style.setProperty('--accent3', a3);
+    } else {
+      // Remove inline overrides so CSS data-accent rules take effect
+      document.documentElement.style.removeProperty('--accent');
+      document.documentElement.style.removeProperty('--accent2');
+      document.documentElement.style.removeProperty('--accent3');
+    }
     document.querySelectorAll('.accent-swatch').forEach(s => s.classList.remove('selected'));
     el.classList.add('selected');
     const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
-    settings.accent = [a1, a2, a3];
+    settings.accentIdx = idx;
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     toast("🔵 Akzentfarbe geändert");
   };
   function applySettings() {
     const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
     if (settings.theme) document.body.setAttribute('data-theme', settings.theme === 'dark' ? '' : settings.theme);
-    if (settings.accent) {
-      document.documentElement.style.setProperty('--accent', settings.accent[0]);
-      document.documentElement.style.setProperty('--accent2', settings.accent[1]);
-      document.documentElement.style.setProperty('--accent3', settings.accent[2]);
+    const accentSets = [
+      ['#6c63ff','#ff6584','#43e8d8'],
+      ['#f7931e','#e74c3c','#f0e68c'],
+      ['#e91e8c','#ff9a56','#b0f0ff'],
+      ['#2ecc71','#f39c12','#74b9ff'],
+      ['#00bcd4','#ff5722','#a0f080'],
+    ];
+    const idx = settings.accentIdx ?? 0;
+    document.body.setAttribute('data-accent', idx === 0 ? '' : String(idx));
+    const theme = document.body.getAttribute('data-theme') || '';
+    if (!theme || theme === 'light') {
+      const [a1,a2,a3] = accentSets[idx];
+      document.documentElement.style.setProperty('--accent', a1);
+      document.documentElement.style.setProperty('--accent2', a2);
+      document.documentElement.style.setProperty('--accent3', a3);
+    } else {
+      document.documentElement.style.removeProperty('--accent');
+      document.documentElement.style.removeProperty('--accent2');
+      document.documentElement.style.removeProperty('--accent3');
     }
   }
 
