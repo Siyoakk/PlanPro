@@ -132,10 +132,69 @@ body.no-animations .btn { transition:none !important; }
 .cal-cell.other-month { opacity:.4; }
 .cal-cell .day-num { font-size:.82rem; font-weight:600; color:var(--text2); margin-bottom:4px; }
 .cal-cell.today .day-num { color:var(--accent); font-weight:700; }
-.cal-event-pill { background:var(--accent); border-radius:4px; padding:2px 5px; font-size:.68rem; color:#fff; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500; cursor:pointer; transition:opacity .15s; display:block; }
+.cal-event-pill { background:var(--accent); border-radius:4px; padding:2px 5px; font-size:.68rem; color:#fff; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500; cursor:grab; transition:opacity .15s,transform .15s,box-shadow .15s; display:block; user-select:none; }
+.cal-event-pill:active { cursor:grabbing; }
+.cal-event-pill.dragging { opacity:.4; transform:scale(.95); }
+.cal-cell.drag-over { border-color:var(--accent) !important; background:rgba(108,99,255,.12) !important; border-width:2px !important; transform:scale(1.02); }
+.drag-ghost { position:fixed; pointer-events:none; z-index:9999; background:var(--accent); color:#fff; border-radius:6px; padding:4px 10px; font-size:.75rem; font-weight:600; font-family:var(--font); box-shadow:0 8px 24px rgba(0,0,0,.4); transform:translate(-50%,-50%) rotate(2deg); white-space:nowrap; max-width:160px; overflow:hidden; text-overflow:ellipsis; opacity:.95; transition:none; }
 .cal-event-pill:hover { opacity:.75; }
 .cal-event-pill.c2 { background:var(--accent2); }
 .cal-event-pill.c3 { background:var(--accent3); color:#1a1a2e; }
+
+/* CALENDAR VIEW SWITCHER */
+.cal-view-switcher { display:flex; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); overflow:hidden; flex-shrink:0; }
+.cal-view-btn { padding:7px 14px; font-size:.8rem; font-weight:600; cursor:pointer; border:none; background:none; color:var(--text2); font-family:var(--font); transition:background .15s,color .15s; white-space:nowrap; }
+.cal-view-btn.active { background:var(--accent); color:#fff; }
+
+/* DAY VIEW */
+.day-view { display:flex; flex-direction:column; gap:0; }
+.day-view-header { font-family:var(--font-head); font-size:1.1rem; margin-bottom:16px; color:var(--text); padding-bottom:12px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+.day-view-header .today-badge { background:var(--accent); color:#fff; border-radius:99px; padding:2px 10px; font-size:.72rem; font-family:var(--font); font-weight:700; }
+.day-timeline { position:relative; }
+.day-hour-row { display:grid; grid-template-columns:48px 1fr; min-height:56px; border-top:1px solid var(--border); position:relative; }
+.day-hour-row:first-child { border-top:none; }
+.day-hour-label { font-size:.7rem; color:var(--text3); font-weight:600; padding-top:4px; padding-right:10px; text-align:right; flex-shrink:0; }
+.day-hour-slot { position:relative; min-height:56px; border-left:1px solid var(--border); }
+.day-hour-slot:hover { background:var(--surface2); }
+.day-event-block { position:absolute; left:4px; right:4px; border-radius:6px; padding:4px 8px; cursor:pointer; overflow:hidden; transition:opacity .15s,transform .15s; z-index:2; }
+.day-event-block:hover { opacity:.88; transform:scale(1.01); }
+.day-event-block .deb-title { font-size:.82rem; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.day-event-block .deb-time { font-size:.68rem; color:rgba(255,255,255,.82); margin-top:1px; }
+.day-event-block .deb-note { font-size:.68rem; color:rgba(255,255,255,.7); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.day-allday-area { background:var(--surface2); border-radius:var(--radius-sm); padding:8px 12px; margin-bottom:12px; display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+.day-allday-label { font-size:.7rem; color:var(--text3); font-weight:700; text-transform:uppercase; letter-spacing:.08em; margin-right:4px; }
+.day-no-events { text-align:center; padding:48px 20px; color:var(--text3); font-size:.9rem; }
+
+/* WEEK VIEW */
+.week-grid { display:grid; grid-template-columns:48px repeat(7,1fr); gap:0; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+.week-header-cell { background:var(--surface2); padding:8px 4px; text-align:center; border-right:1px solid var(--border); border-bottom:1px solid var(--border); }
+.week-header-cell:last-child { border-right:none; }
+.week-header-cell .wh-name { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text3); }
+.week-header-cell .wh-num { font-size:1rem; font-weight:700; color:var(--text); margin-top:2px; cursor:pointer; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:4px auto 0; transition:background .15s; }
+.week-header-cell .wh-num:hover { background:var(--surface); }
+.week-header-cell.wh-today .wh-num { background:var(--accent); color:#fff; }
+.week-time-col { background:var(--surface); border-right:1px solid var(--border); }
+.week-hour-label { font-size:.65rem; color:var(--text3); font-weight:600; padding:2px 6px 0 0; text-align:right; height:48px; border-bottom:1px solid var(--border); display:flex; align-items:flex-start; justify-content:flex-end; }
+.week-day-col { position:relative; border-right:1px solid var(--border); }
+.week-day-col:last-child { border-right:none; }
+.week-hour-slot { height:48px; border-bottom:1px solid var(--border); cursor:pointer; transition:background .1s; }
+.week-hour-slot:last-child { border-bottom:none; }
+.week-hour-slot:hover { background:rgba(108,99,255,.06); }
+.week-event-block { position:absolute; left:2px; right:2px; border-radius:5px; padding:2px 5px; cursor:pointer; overflow:hidden; transition:opacity .15s; z-index:2; }
+.week-event-block:hover { opacity:.85; z-index:3; }
+.week-event-block .web-title { font-size:.7rem; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.week-event-block .web-time { font-size:.62rem; color:rgba(255,255,255,.8); }
+.week-scroll { overflow-y:auto; max-height:600px; }
+.week-body-grid { display:grid; grid-template-columns:48px repeat(7,1fr); }
+
+/* MOBILE cal view switcher */
+@media (max-width:768px) {
+  .cal-view-btn { padding:6px 9px; font-size:.74rem; }
+  .week-grid { grid-template-columns:36px repeat(7,1fr); }
+  .week-hour-label { font-size:.58rem; padding-right:3px; }
+  .week-event-block .web-title { font-size:.6rem; }
+  .week-event-block .web-time { display:none; }
+}
 
 /* EVENT DETAIL */
 .event-detail-header { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
@@ -317,8 +376,13 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
         <button class="btn btn-ghost" onclick="calNext()">›</button>
         <button class="btn btn-ghost" onclick="calToday()">Heute</button>
         <input type="month" class="cal-date-jump" id="cal-jump" onchange="calJump(this.value)">
+        <div class="cal-view-switcher">
+          <button class="cal-view-btn" id="vbtn-day" onclick="setCalView('day',this)">Tag</button>
+          <button class="cal-view-btn" id="vbtn-week" onclick="setCalView('week',this)">Woche</button>
+          <button class="cal-view-btn active" id="vbtn-month" onclick="setCalView('month',this)">Monat</button>
+        </div>
       </div>
-      <div class="cal-grid" id="cal-grid"></div>
+      <div id="cal-view-container"></div>
     </div>
 
     <div class="page" id="page-bookings">
@@ -701,14 +765,37 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
   }
 
   // ---------- KALENDER ----------
+  let calView = 'month'; // 'day' | 'week' | 'month'
+
+  window.setCalView = function(view, el) {
+    calView = view;
+    document.querySelectorAll('.cal-view-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    // Sync date picker type
+    const jump = document.getElementById('cal-jump');
+    if (view === 'day')   { jump.type = 'date';  jump.value = calDate.toISOString().slice(0,10); }
+    if (view === 'week')  { jump.type = 'date';  jump.value = calDate.toISOString().slice(0,10); }
+    if (view === 'month') { jump.type = 'month'; jump.value = `${calDate.getFullYear()}-${String(calDate.getMonth()+1).padStart(2,'0')}`; }
+    renderCalendar();
+  };
+
   function renderCalendar() {
+    if (calView === 'day')   return renderDayView();
+    if (calView === 'week')  return renderWeekView();
+    return renderMonthView();
+  }
+
+  // ── MONTH VIEW ──────────────────────────────────────────────────────────────
+  function renderMonthView() {
     const y = calDate.getFullYear(), m = calDate.getMonth();
     document.getElementById('cal-month-label').textContent = new Date(y,m,1).toLocaleDateString('de-DE',{month:'long',year:'numeric'});
-    document.getElementById('cal-jump').value = `${y}-${String(m+1).padStart(2,'0')}`;
+    const jump = document.getElementById('cal-jump');
+    jump.type = 'month';
+    jump.value = `${y}-${String(m+1).padStart(2,'0')}`;
     const today = todayStr();
     const colMap = ['','c2','c3'];
     const dayNames = ['Mo','Di','Mi','Do','Fr','Sa','So'];
-    let html = dayNames.map(d => `<div class="cal-day-name">${d}</div>`).join('');
+    let html = `<div class="cal-grid">` + dayNames.map(d => `<div class="cal-day-name">${d}</div>`).join('');
     const first = new Date(y,m,1), startDay = first.getDay() || 7, totalDays = new Date(y,m+1,0).getDate();
     for (let i = 1; i < startDay; i++) {
       const d = new Date(y, m, 1 - (startDay - i));
@@ -719,21 +806,230 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
       html += cellHtml(d, ds, events.filter(e => e.date === ds), colMap, false, today);
     }
-    document.getElementById('cal-grid').innerHTML = html;
+    html += '</div>';
+    document.getElementById('cal-view-container').innerHTML = html;
   }
   function cellHtml(dayNum, ds, dayEvs, colMap, otherMonth, today) {
     const isToday = ds === today;
-    const pills = dayEvs.slice(0,2).map(e => `<div class="cal-event-pill ${colMap[e.color||0]} ${e.completed ? 'completed' : ''}" onclick="viewEvent('${e.id}');event.stopPropagation()">${esc(e.title)}</div>`).join('');
-    const more = dayEvs.length > 3 ? `<div style="font-size:.64rem;color:var(--text3)">+${dayEvs.length-3} weitere</div>` : '';
-    return `<div class="cal-cell${otherMonth ? ' other-month' : ''}${isToday ? ' today' : ''}${dayEvs.length ? ' has-events' : ''}" onclick="calClick('${ds}')">
-              <div class="day-num">${dayNum}</div>${pills}${more}
-            </div>`;
+    const pills = dayEvs.slice(0,2).map(e => `<div class="cal-event-pill ${colMap[e.color||0]} ${e.completed ? 'completed' : ''}"
+      draggable="true" data-event-id="${e.id}" data-event-title="${esc(e.title)}"
+      onclick="viewEvent('${e.id}');event.stopPropagation()"
+      ondragstart="onPillDragStart(event,'${e.id}','${esc(e.title)}')"
+      ondragend="onPillDragEnd(event)"
+      ontouchstart="onPillTouchStart(event,'${e.id}','${esc(e.title)}')"
+      ontouchmove="onPillTouchMove(event)"
+      ontouchend="onPillTouchEnd(event)"
+    >${esc(e.title)}</div>`).join('');
+    const more = dayEvs.length > 2 ? `<div style="font-size:.64rem;color:var(--text3)">+${dayEvs.length-2} weitere</div>` : '';
+    return `<div class="cal-cell${otherMonth ? ' other-month' : ''}${isToday ? ' today' : ''}${dayEvs.length ? ' has-events' : ''}"
+      data-date="${ds}" onclick="calCellClick(event,'${ds}')"
+      ondragover="onCellDragOver(event)" ondragleave="onCellDragLeave(event)" ondrop="onCellDrop(event,'${ds}')">
+      <div class="day-num">${dayNum}</div>${pills}${more}
+    </div>`;
   }
-  window.calJump = function(val) { if (!val) return; const [y,m] = val.split('-').map(Number); calDate = new Date(y, m-1, 1); renderCalendar(); };
-  window.calPrev = function() { calDate.setMonth(calDate.getMonth()-1); renderCalendar(); };
-  window.calNext = function() { calDate.setMonth(calDate.getMonth()+1); renderCalendar(); };
+
+  // ── DAY VIEW ────────────────────────────────────────────────────────────────
+  function renderDayView() {
+    const ds = calDate.toISOString().slice(0,10);
+    const today = todayStr();
+    const isToday = ds === today;
+    const label = calDate.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    document.getElementById('cal-month-label').textContent = calDate.toLocaleDateString('de-DE',{day:'numeric',month:'long',year:'numeric'});
+    const jump = document.getElementById('cal-jump');
+    jump.type = 'date'; jump.value = ds;
+    const colMap = ['var(--accent)','var(--accent2)','var(--accent3)'];
+    const dayEvs = events.filter(e => e.date === ds).sort((a,b) => (a.time||'00:00').localeCompare(b.time||'00:00'));
+    const timedEvs   = dayEvs.filter(e => e.time);
+    const untimedEvs = dayEvs.filter(e => !e.time);
+    // Build hour slots 00-23
+    const HOUR_H = 56; // px per hour
+    let slotsHtml = '';
+    for (let h = 0; h < 24; h++) {
+      const label = h === 0 ? '' : String(h).padStart(2,'0') + ':00';
+      slotsHtml += `<div class="day-hour-row">
+        <div class="day-hour-label">${label}</div>
+        <div class="day-hour-slot" onclick="openNewEventModalTime('${ds}','${String(h).padStart(2,'0')}:00')"></div>
+      </div>`;
+    }
+    // Build event blocks (absolute positioned)
+    let blocksHtml = '';
+    // Group overlapping events
+    const placed = [];
+    for (const e of timedEvs) {
+      const [sh,sm] = (e.time||'00:00').split(':').map(Number);
+      const startMin = sh*60+sm;
+      const endMin = e.timeEnd ? (()=>{ const [eh,em]=e.timeEnd.split(':').map(Number); return eh*60+em; })() : startMin+60;
+      const durMin = Math.max(endMin - startMin, 30);
+      const top = (startMin / 60) * HOUR_H;
+      const height = Math.max((durMin / 60) * HOUR_H, 28);
+      // Check overlap columns
+      let col = 0;
+      for (const p of placed) {
+        if (startMin < p.endMin && endMin > p.startMin && col === p.col) col++;
+      }
+      placed.push({startMin, endMin, col});
+      const maxCol = placed.filter(p => startMin < p.endMin && endMin > p.startMin).reduce((m,p)=>Math.max(m,p.col),0)+1;
+      const colW = 100/maxCol;
+      blocksHtml += `<div class="day-event-block" style="top:${top}px;height:${height}px;background:${colMap[e.color||0]};left:calc(${col*colW}% + 4px);width:calc(${colW}% - 8px);"
+        onclick="viewEvent('${e.id}');event.stopPropagation()">
+        <div class="deb-title">${esc(e.title)}</div>
+        <div class="deb-time">${esc(e.time)}${e.timeEnd?' – '+esc(e.timeEnd):''} Uhr</div>
+        ${e.note ? `<div class="deb-note">${esc(e.note)}</div>` : ''}
+      </div>`;
+    }
+    // All-day area for untimed
+    const alldayHtml = untimedEvs.length ? `<div class="day-allday-area">
+      <span class="day-allday-label">Ganztägig</span>
+      ${untimedEvs.map(e=>`<div class="cal-event-pill" style="position:static;background:${colMap[e.color||0]}" onclick="viewEvent('${e.id}')">${esc(e.title)}</div>`).join('')}
+    </div>` : '';
+    document.getElementById('cal-view-container').innerHTML = `<div class="day-view">
+      <div class="day-view-header">${label}${isToday?'<span class="today-badge">Heute</span>':''}</div>
+      ${alldayHtml}
+      <div class="day-timeline" style="position:relative;">
+        ${slotsHtml}
+        <div style="position:absolute;top:0;left:48px;right:0;bottom:0;pointer-events:none;">${blocksHtml}</div>
+      </div>
+    </div>`;
+    // Current time line
+    if (isToday) {
+      const now = new Date();
+      const mins = now.getHours()*60 + now.getMinutes();
+      const top = (mins/60)*HOUR_H;
+      const line = document.createElement('div');
+      line.style.cssText = `position:absolute;top:${top}px;left:48px;right:0;height:2px;background:var(--accent2);z-index:10;pointer-events:none;`;
+      line.innerHTML = `<div style="width:10px;height:10px;border-radius:50%;background:var(--accent2);position:absolute;left:-5px;top:-4px;"></div>`;
+      document.querySelector('.day-timeline').appendChild(line);
+      // Scroll to current time
+      setTimeout(()=>{ const tl = document.querySelector('.day-timeline'); if(tl) tl.scrollTop = Math.max(0,top-100); },50);
+    }
+  }
+  window.openNewEventModalTime = function(date, time) {
+    openNewEventModal(date);
+    setTimeout(()=>{ const t = document.getElementById('ev-time'); if(t) t.value = time; }, 50);
+  };
+
+  // ── WEEK VIEW ───────────────────────────────────────────────────────────────
+  function renderWeekView() {
+    const today = todayStr();
+    // Find Monday of current week
+    const d = new Date(calDate);
+    const dow = d.getDay() || 7;
+    d.setDate(d.getDate() - dow + 1);
+    const weekDays = Array.from({length:7}, (_,i) => { const x = new Date(d); x.setDate(d.getDate()+i); return x; });
+    const weekLabel = `${weekDays[0].toLocaleDateString('de-DE',{day:'numeric',month:'short'})} – ${weekDays[6].toLocaleDateString('de-DE',{day:'numeric',month:'short',year:'numeric'})}`;
+    document.getElementById('cal-month-label').textContent = weekLabel;
+    const jump = document.getElementById('cal-jump');
+    jump.type = 'date'; jump.value = calDate.toISOString().slice(0,10);
+    const colMap = ['var(--accent)','var(--accent2)','var(--accent3)'];
+    const dayNames = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+    const HOUR_H = 48;
+    // Header
+    let headerHtml = `<div class="week-header-cell" style="background:var(--surface2);border-right:1px solid var(--border)"></div>`;
+    weekDays.forEach((wd,i) => {
+      const ds = wd.toISOString().slice(0,10);
+      const isToday = ds === today;
+      headerHtml += `<div class="week-header-cell${isToday?' wh-today':''}">
+        <div class="wh-name">${dayNames[i]}</div>
+        <div class="wh-num" onclick="switchToDayView('${ds}')">${wd.getDate()}</div>
+      </div>`;
+    });
+    // Body: hour rows with event blocks per day
+    let bodyHtml = '';
+    for (let h = 0; h < 24; h++) {
+      bodyHtml += `<div class="week-hour-label">${h===0?'':String(h).padStart(2,'0')}</div>`;
+      weekDays.forEach(wd => {
+        const ds = wd.toISOString().slice(0,10);
+        bodyHtml += `<div class="week-day-col"><div class="week-hour-slot" onclick="openNewEventModalTime('${ds}','${String(h).padStart(2,'0')}:00')"></div></div>`;
+      });
+    }
+    // Event blocks per day column
+    let eventOverlayHtml = '';
+    weekDays.forEach((wd, dayIdx) => {
+      const ds = wd.toISOString().slice(0,10);
+      const dayEvs = events.filter(e => e.date === ds && e.time).sort((a,b)=>a.time.localeCompare(b.time));
+      dayEvs.forEach(e => {
+        const [sh,sm] = e.time.split(':').map(Number);
+        const startMin = sh*60+sm;
+        const endMin = e.timeEnd ? (()=>{const[eh,em]=e.timeEnd.split(':').map(Number);return eh*60+em;})() : startMin+60;
+        const durMin = Math.max(endMin-startMin,30);
+        const top = (startMin/60)*HOUR_H + 22; // +22 for header
+        const height = Math.max((durMin/60)*HOUR_H,20);
+        // column position via CSS calc — dayIdx+1 because col 0 is time label
+        eventOverlayHtml += `<div class="week-event-block" style="
+          top:${top}px;height:${height}px;background:${colMap[e.color||0]};
+          grid-column:${dayIdx+2};
+          position:absolute;
+          left:calc(${(dayIdx)*100/7 + 100/7*0.05 + 100/7*0}% + 52px);
+          width:calc(${100/7}% - 6px);
+          " onclick="viewEvent('${e.id}');event.stopPropagation()">
+          <div class="web-title">${esc(e.title)}</div>
+          <div class="web-time">${esc(e.time)}${e.timeEnd?' – '+esc(e.timeEnd):''}</div>
+        </div>`;
+      });
+    });
+    document.getElementById('cal-view-container').innerHTML = `
+      <div style="overflow-x:auto;">
+        <div style="min-width:480px;">
+          <div style="display:grid;grid-template-columns:52px repeat(7,1fr);border:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;overflow:hidden;">
+            ${headerHtml}
+          </div>
+          <div style="position:relative;overflow-y:auto;max-height:580px;border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);">
+            <div style="display:grid;grid-template-columns:52px repeat(7,1fr);">
+              ${bodyHtml}
+            </div>
+            ${eventOverlayHtml}
+            ${(()=>{
+              const now=new Date(),ds=now.toISOString().slice(0,10);
+              const dayIdx=weekDays.findIndex(w=>w.toISOString().slice(0,10)===ds);
+              if(dayIdx<0)return'';
+              const mins=now.getHours()*60+now.getMinutes();
+              const top=(mins/60)*HOUR_H+22;
+              const left=52+dayIdx*(100/7)+'%'; // approx
+              return `<div style="position:absolute;top:${top}px;left:0;right:0;height:2px;background:var(--accent2);z-index:10;pointer-events:none;opacity:.7;">
+                <div style="width:8px;height:8px;border-radius:50%;background:var(--accent2);position:absolute;left:52px;top:-3px;"></div>
+              </div>`;
+            })()}
+          </div>
+        </div>
+      </div>`;
+    // Scroll to business hours
+    setTimeout(()=>{
+      const scrollEl = document.querySelector('#cal-view-container [style*="overflow-y:auto"]');
+      if(scrollEl){ const now=new Date(); scrollEl.scrollTop=Math.max(0,((now.getHours()*60+now.getMinutes())/60)*HOUR_H-100); }
+    },50);
+  }
+  window.switchToDayView = function(ds) {
+    calDate = new Date(ds);
+    calView = 'day';
+    document.querySelectorAll('.cal-view-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('vbtn-day').classList.add('active');
+    renderCalendar();
+  };
+
+  window.calJump = function(val) {
+    if (!val) return;
+    if (calView === 'month') { const [y,m] = val.split('-').map(Number); calDate = new Date(y, m-1, 1); }
+    else { calDate = new Date(val); }
+    renderCalendar();
+  };
+  window.calPrev = function() {
+    if (calView === 'month') calDate.setMonth(calDate.getMonth()-1);
+    else if (calView === 'week') calDate.setDate(calDate.getDate()-7);
+    else calDate.setDate(calDate.getDate()-1);
+    renderCalendar();
+  };
+  window.calNext = function() {
+    if (calView === 'month') calDate.setMonth(calDate.getMonth()+1);
+    else if (calView === 'week') calDate.setDate(calDate.getDate()+7);
+    else calDate.setDate(calDate.getDate()+1);
+    renderCalendar();
+  };
   window.calToday = function() { calDate = new Date(); renderCalendar(); };
   window.calClick = function(ds) { openNewEventModal(ds); };
+  window.calCellClick = function(e, ds) {
+    if (window._dragJustDropped) { window._dragJustDropped = false; return; }
+    openNewEventModal(ds);
+  };
 
   // ---------- EVENT MODAL & TOGGLE COMPLETED ----------
   window.toggleCompleted = async function(id) {
@@ -1017,6 +1313,109 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       showLogin();
     }
   });
+
+  // ---------- DRAG & DROP (Desktop + Touch) ----------
+  let _dragEventId = null;
+  let _dragGhost = null;
+  let _touchOriginCell = null;
+
+  // --- Desktop HTML5 Drag ---
+  window.onPillDragStart = function(e, id, title) {
+    _dragEventId = id;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', id);
+    // Custom ghost image
+    const ghost = document.createElement('div');
+    ghost.className = 'drag-ghost';
+    ghost.textContent = title;
+    document.body.appendChild(ghost);
+    ghost.style.left = '-999px';
+    e.dataTransfer.setDragImage(ghost, ghost.offsetWidth / 2, ghost.offsetHeight / 2);
+    setTimeout(() => ghost.remove(), 0);
+    setTimeout(() => e.target.classList.add('dragging'), 0);
+  };
+  window.onPillDragEnd = function(e) {
+    e.target.classList.remove('dragging');
+    document.querySelectorAll('.cal-cell.drag-over').forEach(c => c.classList.remove('drag-over'));
+    _dragEventId = null;
+  };
+  window.onCellDragOver = function(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    e.currentTarget.classList.add('drag-over');
+  };
+  window.onCellDragLeave = function(e) {
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      e.currentTarget.classList.remove('drag-over');
+    }
+  };
+  window.onCellDrop = async function(e, targetDate) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.classList.remove('drag-over');
+    const id = _dragEventId || e.dataTransfer.getData('text/plain');
+    if (!id) return;
+    const ev = events.find(ev => ev.id === id);
+    if (!ev || ev.date === targetDate) return;
+    window._dragJustDropped = true;
+    try {
+      await updateDoc(doc(db, 'events', id), { date: targetDate });
+      toast(`📅 Verschoben auf ${formatDate(targetDate)}`);
+    } catch(err) { toast('Fehler beim Verschieben: ' + err.message); }
+  };
+
+  // --- Touch (Mobile) ---
+  window.onPillTouchStart = function(e, id, title) {
+    if (e.touches.length !== 1) return;
+    _dragEventId = id;
+    _touchOriginCell = e.currentTarget.closest('.cal-cell');
+    const touch = e.touches[0];
+    // Create floating ghost
+    _dragGhost = document.createElement('div');
+    _dragGhost.className = 'drag-ghost';
+    _dragGhost.textContent = title;
+    _dragGhost.style.left = touch.clientX + 'px';
+    _dragGhost.style.top = touch.clientY + 'px';
+    document.body.appendChild(_dragGhost);
+    e.currentTarget.classList.add('dragging');
+    e.preventDefault();
+  };
+  window.onPillTouchMove = function(e) {
+    if (!_dragGhost || e.touches.length !== 1) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    _dragGhost.style.left = touch.clientX + 'px';
+    _dragGhost.style.top = touch.clientY + 'px';
+    // Highlight cell under finger
+    document.querySelectorAll('.cal-cell.drag-over').forEach(c => c.classList.remove('drag-over'));
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    const cell = el ? el.closest('.cal-cell') : null;
+    if (cell) cell.classList.add('drag-over');
+  };
+  window.onPillTouchEnd = async function(e) {
+    if (!_dragGhost) return;
+    e.preventDefault();
+    const touch = e.changedTouches[0];
+    // Find target cell under finger
+    _dragGhost.style.display = 'none';
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    _dragGhost.remove();
+    _dragGhost = null;
+    document.querySelectorAll('.cal-cell.drag-over').forEach(c => c.classList.remove('drag-over'));
+    document.querySelectorAll('.cal-event-pill.dragging').forEach(p => p.classList.remove('dragging'));
+    const cell = el ? el.closest('.cal-cell') : null;
+    const targetDate = cell ? cell.getAttribute('data-date') : null;
+    const id = _dragEventId;
+    _dragEventId = null;
+    if (!targetDate || !id) return;
+    const ev = events.find(ev => ev.id === id);
+    if (!ev || ev.date === targetDate) return;
+    try {
+      await updateDoc(doc(db, 'events', id), { date: targetDate });
+      toast(`📅 Verschoben auf ${formatDate(targetDate)}`);
+    } catch(err) { toast('Fehler beim Verschieben: ' + err.message); }
+  };
+
 </script>
 </body>
 </html>
