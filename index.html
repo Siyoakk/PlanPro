@@ -1125,7 +1125,8 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       const dayEvs = events.filter(e => e.date===ds && e.time)
                            .sort((a,b) => a.time.localeCompare(b.time));
       if (!dayEvs.length) return '';
-      // Assign overlap columns
+
+      // Step 1: compute startMin/endMin and assign overlap columns
       const placed = [];
       dayEvs.forEach(e => {
         const [sh,sm] = e.time.split(':').map(Number);
@@ -1138,16 +1139,28 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
         while (placed.some(p=>p.col===col&&startMin<p.endMin&&endMin>p.startMin)) col++;
         placed.push({e, startMin, endMin, col});
       });
-      // Render — height is always WEEK_HOUR_H (uniform), top is time-based
-      return placed.map(({e, startMin, col}) => {
-        const totalCols = placed.filter(p=>p.startMin<placed.find(x=>x.e===e).endMin&&placed.find(x=>x.e===e).startMin<p.endMin).reduce((m,p)=>Math.max(m,p.col),0)+1;
-        const top = Math.round((startMin/60)*WEEK_HOUR_H);
-        const colW = 100/totalCols;
-        const left = `${col*colW}%`;
-        const width = `calc(${colW}% - 3px)`;
+
+      // Step 2: for each event determine how many columns its overlap group needs
+      return placed.map(item => {
+        const {e, startMin, endMin, col} = item;
+        const groupCols = placed
+          .filter(p => startMin < p.endMin && endMin > p.startMin)
+          .reduce((m,p) => Math.max(m, p.col), 0) + 1;
+
+        const top    = Math.round((startMin / 60) * WEEK_HOUR_H);
+        const height = Math.max(Math.round(((endMin - startMin) / 60) * WEEK_HOUR_H), 20);
+        const GAP    = 2; // px gap between sub-columns
+        const leftPct  = col * (100 / groupCols);
+        const widthPct = 100 / groupCols;
+
         return `<div class="week-event-block"
-          style="position:absolute;top:${top}px;height:${WEEK_HOUR_H}px;
-                 background:${colMap[e.color||0]};left:${left};width:${width};pointer-events:auto;"
+          style="position:absolute;
+                 top:${top}px;
+                 height:${height}px;
+                 background:${colMap[e.color||0]};
+                 left:calc(${leftPct}% + ${col > 0 ? GAP : 0}px);
+                 width:calc(${widthPct}% - ${col > 0 ? GAP : 1}px);
+                 pointer-events:auto;"
           onclick="viewEvent('${e.id}');event.stopPropagation()">
           <div class="web-title">${esc(e.title)}</div>
           <div class="web-time">${esc(e.time)}${e.timeEnd?' – '+esc(e.timeEnd):''}</div>
