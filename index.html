@@ -91,7 +91,8 @@ body.no-animations .btn { transition:none !important; }
 
 /* DASHBOARD */
 .dash-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:28px; }
-.stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:22px 20px; position:relative; overflow:hidden; }
+.stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:22px 20px; position:relative; overflow:hidden; transition:transform .15s,box-shadow .15s,border-color .15s; }
+.stat-card:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,.15); border-color:var(--accent); }
 .stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--accent); }
 .stat-card.c2::before { background:var(--accent2); } .stat-card.c3::before { background:var(--accent3); }
 .stat-label { font-size:.75rem; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:var(--text2); margin-bottom:8px; }
@@ -136,6 +137,10 @@ body.no-animations .btn { transition:none !important; }
 .cal-event-pill:active { cursor:grabbing; }
 .cal-event-pill.dragging { opacity:.4; transform:scale(.95); }
 .cal-cell.drag-over { border-color:var(--accent) !important; background:rgba(108,99,255,.12) !important; border-width:2px !important; transform:scale(1.02); }
+.day-hour-slot.drag-over { background:rgba(108,99,255,.18) !important; outline:2px dashed var(--accent); outline-offset:-2px; }
+.week-hour-slot.drag-over { background:rgba(108,99,255,.18) !important; outline:2px dashed var(--accent); outline-offset:-2px; }
+.day-event-block.dragging { opacity:.35; transform:scale(.97); }
+.week-event-block.dragging { opacity:.35; transform:scale(.97); }
 .drag-ghost { position:fixed; pointer-events:none; z-index:9999; background:var(--accent); color:#fff; border-radius:6px; padding:4px 10px; font-size:.75rem; font-weight:600; font-family:var(--font); box-shadow:0 8px 24px rgba(0,0,0,.4); transform:translate(-50%,-50%) rotate(2deg); white-space:nowrap; max-width:160px; overflow:hidden; text-overflow:ellipsis; opacity:.95; transition:none; }
 .cal-event-pill:hover { opacity:.75; }
 .cal-event-pill.c2 { background:var(--accent2); }
@@ -361,9 +366,12 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
 
     <div class="page active" id="page-dashboard">
       <div class="dash-grid">
-        <div class="stat-card"><div class="stat-label">Heute</div><div class="stat-val" id="stat-today">0</div><div class="stat-sub">Termine heute</div></div>
-        <div class="stat-card c2"><div class="stat-label">Gesamt</div><div class="stat-val" id="stat-total">0</div><div class="stat-sub">Alle Buchungen</div></div>
-        <div class="stat-card c3"><div class="stat-label">Diese Woche</div><div class="stat-val" id="stat-week">0</div><div class="stat-sub">Termine diese Woche</div></div>
+        <div class="stat-card" style="cursor:pointer" onclick="navigateDashStat('today')" title="Zur Tagesansicht">
+          <div class="stat-label">Heute</div><div class="stat-val" id="stat-today">0</div><div class="stat-sub">Termine heute →</div></div>
+        <div class="stat-card c2" style="cursor:pointer" onclick="navigateDashStat('total')" title="Alle Buchungen">
+          <div class="stat-label">Gesamt</div><div class="stat-val" id="stat-total">0</div><div class="stat-sub">Alle Buchungen →</div></div>
+        <div class="stat-card c3" style="cursor:pointer" onclick="navigateDashStat('week')" title="Zur Wochenansicht">
+          <div class="stat-label">Diese Woche</div><div class="stat-val" id="stat-week">0</div><div class="stat-sub">Termine diese Woche →</div></div>
       </div>
       <div class="section-head"><h2>Heutige Termine</h2></div>
       <div class="event-list" id="today-events"></div>
@@ -829,175 +837,125 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
   }
 
   // ── DAY VIEW ────────────────────────────────────────────────────────────────
+  const DAY_HOUR_H = 56; // px per hour – single source of truth
+
   function renderDayView() {
     const ds = calDate.toISOString().slice(0,10);
     const today = todayStr();
     const isToday = ds === today;
     const label = calDate.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-    document.getElementById('cal-month-label').textContent = calDate.toLocaleDateString('de-DE',{day:'numeric',month:'long',year:'numeric'});
+    document.getElementById('cal-month-label').textContent =
+      calDate.toLocaleDateString('de-DE',{day:'numeric',month:'long',year:'numeric'});
     const jump = document.getElementById('cal-jump');
     jump.type = 'date'; jump.value = ds;
+
     const colMap = ['var(--accent)','var(--accent2)','var(--accent3)'];
-    const dayEvs = events.filter(e => e.date === ds).sort((a,b) => (a.time||'00:00').localeCompare(b.time||'00:00'));
+    const dayEvs = events.filter(e => e.date === ds)
+                         .sort((a,b)=>(a.time||'00:00').localeCompare(b.time||'00:00'));
     const timedEvs   = dayEvs.filter(e => e.time);
     const untimedEvs = dayEvs.filter(e => !e.time);
-    // Build hour slots 00-23
-    const HOUR_H = 56; // px per hour
+
+    // ── hour grid rows ──
     let slotsHtml = '';
     for (let h = 0; h < 24; h++) {
-      const label = h === 0 ? '' : String(h).padStart(2,'0') + ':00';
-      slotsHtml += `<div class="day-hour-row">
-        <div class="day-hour-label">${label}</div>
-        <div class="day-hour-slot" onclick="openNewEventModalTime('${ds}','${String(h).padStart(2,'0')}:00')"></div>
+      const lbl = h === 0 ? '' : String(h).padStart(2,'0') + ':00';
+      slotsHtml += `<div class="day-hour-row" data-hour="${h}">
+        <div class="day-hour-label">${lbl}</div>
+        <div class="day-hour-slot"
+          data-date="${ds}" data-hour="${h}"
+          onclick="openNewEventModalTime('${ds}','${String(h).padStart(2,'0')}:00')"></div>
       </div>`;
     }
-    // Build event blocks (absolute positioned)
-    let blocksHtml = '';
-    // Group overlapping events
-    const placed = [];
+
+    // ── event blocks (overlap layout) ──
+    // Step 1: assign columns properly via a sweep-line approach
+    const placed = []; // {ev, startMin, endMin, col}
     for (const e of timedEvs) {
       const [sh,sm] = (e.time||'00:00').split(':').map(Number);
       const startMin = sh*60+sm;
-      const endMin = e.timeEnd ? (()=>{ const [eh,em]=e.timeEnd.split(':').map(Number); return eh*60+em; })() : startMin+60;
-      const durMin = Math.max(endMin - startMin, 30);
-      const top = (startMin / 60) * HOUR_H;
-      const height = Math.max((durMin / 60) * HOUR_H, 28);
-      // Check overlap columns
+      const rawEnd = e.timeEnd
+        ? (()=>{const[eh,em]=e.timeEnd.split(':').map(Number);return eh*60+em;})()
+        : startMin+60;
+      const endMin = Math.max(rawEnd, startMin+30);
+      // find first free column
       let col = 0;
-      for (const p of placed) {
-        if (startMin < p.endMin && endMin > p.startMin && col === p.col) col++;
-      }
-      placed.push({startMin, endMin, col});
-      const maxCol = placed.filter(p => startMin < p.endMin && endMin > p.startMin).reduce((m,p)=>Math.max(m,p.col),0)+1;
-      const colW = 100/maxCol;
-      blocksHtml += `<div class="day-event-block" style="top:${top}px;height:${height}px;background:${colMap[e.color||0]};left:calc(${col*colW}% + 4px);width:calc(${colW}% - 8px);"
+      while (placed.some(p => p.col===col && startMin < p.endMin && endMin > p.startMin)) col++;
+      placed.push({ev:e, startMin, endMin, col});
+    }
+    // Step 2: for each event, count how many columns are in its overlap group
+    let blocksHtml = '';
+    for (const item of placed) {
+      const {ev:e, startMin, endMin, col} = item;
+      const groupCols = placed
+        .filter(p => startMin < p.endMin && endMin > p.startMin)
+        .reduce((m,p) => Math.max(m, p.col), 0) + 1;
+      const top    = Math.round((startMin/60)*DAY_HOUR_H);
+      const height = Math.max(Math.round(((endMin-startMin)/60)*DAY_HOUR_H), 28);
+      const GAP = 4; // px gap between columns
+      const totalGap = (groupCols - 1) * GAP;
+      const colW = `calc((100% - ${totalGap}px) / ${groupCols})`;
+      const leftOffset = `calc((100% - ${totalGap}px) / ${groupCols} * ${col} + ${col * GAP}px + 4px)`;
+      const widthVal   = `calc((100% - ${totalGap}px) / ${groupCols} - 4px)`;
+      blocksHtml += `<div class="day-event-block"
+        style="top:${top}px;height:${height}px;background:${colMap[e.color||0]};
+               left:${leftOffset};width:${widthVal};"
         onclick="viewEvent('${e.id}');event.stopPropagation()">
         <div class="deb-title">${esc(e.title)}</div>
         <div class="deb-time">${esc(e.time)}${e.timeEnd?' – '+esc(e.timeEnd):''} Uhr</div>
         ${e.note ? `<div class="deb-note">${esc(e.note)}</div>` : ''}
       </div>`;
     }
-    // All-day area for untimed
+
+    // ── all-day pills ──
     const alldayHtml = untimedEvs.length ? `<div class="day-allday-area">
       <span class="day-allday-label">Ganztägig</span>
-      ${untimedEvs.map(e=>`<div class="cal-event-pill" style="position:static;background:${colMap[e.color||0]}" onclick="viewEvent('${e.id}')">${esc(e.title)}</div>`).join('')}
+      ${untimedEvs.map(e=>`<div class="cal-event-pill"
+        style="position:static;background:${colMap[e.color||0]}"
+        onclick="viewEvent('${e.id}')">${esc(e.title)}</div>`).join('')}
     </div>` : '';
+
     document.getElementById('cal-view-container').innerHTML = `<div class="day-view">
       <div class="day-view-header">${label}${isToday?'<span class="today-badge">Heute</span>':''}</div>
       ${alldayHtml}
-      <div class="day-timeline" style="position:relative;">
-        ${slotsHtml}
-        <div style="position:absolute;top:0;left:48px;right:0;bottom:0;pointer-events:none;">${blocksHtml}</div>
+      <div class="day-timeline" style="position:relative;overflow-y:auto;max-height:600px;">
+        <div style="position:relative;">
+          ${slotsHtml}
+          <div style="position:absolute;top:0;left:48px;right:0;bottom:0;pointer-events:none;" id="day-blocks-layer">
+            ${blocksHtml}
+          </div>
+        </div>
       </div>
     </div>`;
-    // Current time line
+
+    // fix blocks layer pointer-events so events are clickable
+    const layer = document.getElementById('day-blocks-layer');
+    if (layer) layer.style.pointerEvents = 'none';
+    document.querySelectorAll('.day-event-block').forEach(b => b.style.pointerEvents = 'auto');
+
+    // current-time line
     if (isToday) {
-      const now = new Date();
+      const now  = new Date();
       const mins = now.getHours()*60 + now.getMinutes();
-      const top = (mins/60)*HOUR_H;
+      const top  = Math.round((mins/60)*DAY_HOUR_H);
       const line = document.createElement('div');
       line.style.cssText = `position:absolute;top:${top}px;left:48px;right:0;height:2px;background:var(--accent2);z-index:10;pointer-events:none;`;
       line.innerHTML = `<div style="width:10px;height:10px;border-radius:50%;background:var(--accent2);position:absolute;left:-5px;top:-4px;"></div>`;
-      document.querySelector('.day-timeline').appendChild(line);
-      // Scroll to current time
-      setTimeout(()=>{ const tl = document.querySelector('.day-timeline'); if(tl) tl.scrollTop = Math.max(0,top-100); },50);
+      document.querySelector('.day-timeline > div').appendChild(line);
     }
-  }
-  window.openNewEventModalTime = function(date, time) {
-    openNewEventModal(date);
-    setTimeout(()=>{ const t = document.getElementById('ev-time'); if(t) t.value = time; }, 50);
-  };
-
-  // ── WEEK VIEW ───────────────────────────────────────────────────────────────
-  function renderWeekView() {
-    const today = todayStr();
-    // Find Monday of current week
-    const d = new Date(calDate);
-    const dow = d.getDay() || 7;
-    d.setDate(d.getDate() - dow + 1);
-    const weekDays = Array.from({length:7}, (_,i) => { const x = new Date(d); x.setDate(d.getDate()+i); return x; });
-    const weekLabel = `${weekDays[0].toLocaleDateString('de-DE',{day:'numeric',month:'short'})} – ${weekDays[6].toLocaleDateString('de-DE',{day:'numeric',month:'short',year:'numeric'})}`;
-    document.getElementById('cal-month-label').textContent = weekLabel;
-    const jump = document.getElementById('cal-jump');
-    jump.type = 'date'; jump.value = calDate.toISOString().slice(0,10);
-    const colMap = ['var(--accent)','var(--accent2)','var(--accent3)'];
-    const dayNames = ['Mo','Di','Mi','Do','Fr','Sa','So'];
-    const HOUR_H = 48;
-    // Header
-    let headerHtml = `<div class="week-header-cell" style="background:var(--surface2);border-right:1px solid var(--border)"></div>`;
-    weekDays.forEach((wd,i) => {
-      const ds = wd.toISOString().slice(0,10);
-      const isToday = ds === today;
-      headerHtml += `<div class="week-header-cell${isToday?' wh-today':''}">
-        <div class="wh-name">${dayNames[i]}</div>
-        <div class="wh-num" onclick="switchToDayView('${ds}')">${wd.getDate()}</div>
-      </div>`;
-    });
-    // Body: hour rows with event blocks per day
-    let bodyHtml = '';
-    for (let h = 0; h < 24; h++) {
-      bodyHtml += `<div class="week-hour-label">${h===0?'':String(h).padStart(2,'0')}</div>`;
-      weekDays.forEach(wd => {
-        const ds = wd.toISOString().slice(0,10);
-        bodyHtml += `<div class="week-day-col"><div class="week-hour-slot" onclick="openNewEventModalTime('${ds}','${String(h).padStart(2,'0')}:00')"></div></div>`;
-      });
-    }
-    // Event blocks per day column
-    let eventOverlayHtml = '';
-    weekDays.forEach((wd, dayIdx) => {
-      const ds = wd.toISOString().slice(0,10);
-      const dayEvs = events.filter(e => e.date === ds && e.time).sort((a,b)=>a.time.localeCompare(b.time));
-      dayEvs.forEach(e => {
-        const [sh,sm] = e.time.split(':').map(Number);
-        const startMin = sh*60+sm;
-        const endMin = e.timeEnd ? (()=>{const[eh,em]=e.timeEnd.split(':').map(Number);return eh*60+em;})() : startMin+60;
-        const durMin = Math.max(endMin-startMin,30);
-        const top = (startMin/60)*HOUR_H + 22; // +22 for header
-        const height = Math.max((durMin/60)*HOUR_H,20);
-        // column position via CSS calc — dayIdx+1 because col 0 is time label
-        eventOverlayHtml += `<div class="week-event-block" style="
-          top:${top}px;height:${height}px;background:${colMap[e.color||0]};
-          grid-column:${dayIdx+2};
-          position:absolute;
-          left:calc(${(dayIdx)*100/7 + 100/7*0.05 + 100/7*0}% + 52px);
-          width:calc(${100/7}% - 6px);
-          " onclick="viewEvent('${e.id}');event.stopPropagation()">
-          <div class="web-title">${esc(e.title)}</div>
-          <div class="web-time">${esc(e.time)}${e.timeEnd?' – '+esc(e.timeEnd):''}</div>
-        </div>`;
-      });
-    });
-    document.getElementById('cal-view-container').innerHTML = `
-      <div style="overflow-x:auto;">
-        <div style="min-width:480px;">
-          <div style="display:grid;grid-template-columns:52px repeat(7,1fr);border:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;overflow:hidden;">
-            ${headerHtml}
-          </div>
-          <div style="position:relative;overflow-y:auto;max-height:580px;border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);">
-            <div style="display:grid;grid-template-columns:52px repeat(7,1fr);">
-              ${bodyHtml}
-            </div>
-            ${eventOverlayHtml}
-            ${(()=>{
-              const now=new Date(),ds=now.toISOString().slice(0,10);
-              const dayIdx=weekDays.findIndex(w=>w.toISOString().slice(0,10)===ds);
-              if(dayIdx<0)return'';
-              const mins=now.getHours()*60+now.getMinutes();
-              const top=(mins/60)*HOUR_H+22;
-              const left=52+dayIdx*(100/7)+'%'; // approx
-              return `<div style="position:absolute;top:${top}px;left:0;right:0;height:2px;background:var(--accent2);z-index:10;pointer-events:none;opacity:.7;">
-                <div style="width:8px;height:8px;border-radius:50%;background:var(--accent2);position:absolute;left:52px;top:-3px;"></div>
-              </div>`;
-            })()}
-          </div>
-        </div>
-      </div>`;
-    // Scroll to business hours
+    // scroll to ~8 am or current hour
     setTimeout(()=>{
-      const scrollEl = document.querySelector('#cal-view-container [style*="overflow-y:auto"]');
-      if(scrollEl){ const now=new Date(); scrollEl.scrollTop=Math.max(0,((now.getHours()*60+now.getMinutes())/60)*HOUR_H-100); }
-    },50);
+      const tl = document.querySelector('.day-timeline');
+      if (!tl) return;
+      const now = new Date();
+      const scrollTo = isToday
+        ? Math.max(0, Math.round((now.getHours()*60+now.getMinutes())/60*DAY_HOUR_H) - 120)
+        : 8*DAY_HOUR_H;
+      tl.scrollTop = scrollTo;
+    }, 50);
   }
+
+
+
   window.switchToDayView = function(ds) {
     calDate = new Date(ds);
     calView = 'day';
@@ -1025,6 +983,26 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     renderCalendar();
   };
   window.calToday = function() { calDate = new Date(); renderCalendar(); };
+
+  // Dashboard stat-card navigation
+  window.navigateDashStat = function(which) {
+    calDate = new Date();
+    if (which === 'today') {
+      calView = 'day';
+      document.querySelectorAll('.cal-view-btn').forEach(b=>b.classList.remove('active'));
+      const btn = document.getElementById('vbtn-day');
+      if (btn) btn.classList.add('active');
+      navigate('calendar');
+    } else if (which === 'week') {
+      calView = 'week';
+      document.querySelectorAll('.cal-view-btn').forEach(b=>b.classList.remove('active'));
+      const btn = document.getElementById('vbtn-week');
+      if (btn) btn.classList.add('active');
+      navigate('calendar');
+    } else if (which === 'total') {
+      navigate('bookings');
+    }
+  };
   window.calClick = function(ds) { openNewEventModal(ds); };
   window.calCellClick = function(e, ds) {
     if (window._dragJustDropped) { window._dragJustDropped = false; return; }
@@ -1314,29 +1292,30 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     }
   });
 
-  // ---------- DRAG & DROP (Desktop + Touch) ----------
+  // ---------- DRAG & DROP – Monatsansicht ----------
+  // Desktop: HTML5 drag. Mobile: Long-Press (500ms) → dann ziehen.
   let _dragEventId = null;
-  let _dragGhost = null;
-  let _touchOriginCell = null;
+  let _dragGhost   = null;
+  let _longPressTimer = null;
+  let _longPressActive = false;   // true once long-press fires
 
-  // --- Desktop HTML5 Drag ---
+  // ── Desktop HTML5 Drag ──────────────────────────────────────────────────
   window.onPillDragStart = function(e, id, title) {
     _dragEventId = id;
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', id);
-    // Custom ghost image
     const ghost = document.createElement('div');
     ghost.className = 'drag-ghost';
     ghost.textContent = title;
     document.body.appendChild(ghost);
     ghost.style.left = '-999px';
-    e.dataTransfer.setDragImage(ghost, ghost.offsetWidth / 2, ghost.offsetHeight / 2);
-    setTimeout(() => ghost.remove(), 0);
-    setTimeout(() => e.target.classList.add('dragging'), 0);
+    e.dataTransfer.setDragImage(ghost, ghost.offsetWidth/2, ghost.offsetHeight/2);
+    setTimeout(()=>ghost.remove(), 0);
+    setTimeout(()=>e.target.classList.add('dragging'), 0);
   };
   window.onPillDragEnd = function(e) {
     e.target.classList.remove('dragging');
-    document.querySelectorAll('.cal-cell.drag-over').forEach(c => c.classList.remove('drag-over'));
+    document.querySelectorAll('.cal-cell.drag-over').forEach(c=>c.classList.remove('drag-over'));
     _dragEventId = null;
   };
   window.onCellDragOver = function(e) {
@@ -1345,75 +1324,101 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     e.currentTarget.classList.add('drag-over');
   };
   window.onCellDragLeave = function(e) {
-    if (!e.currentTarget.contains(e.relatedTarget)) {
+    if (!e.currentTarget.contains(e.relatedTarget))
       e.currentTarget.classList.remove('drag-over');
-    }
   };
   window.onCellDrop = async function(e, targetDate) {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     e.currentTarget.classList.remove('drag-over');
     const id = _dragEventId || e.dataTransfer.getData('text/plain');
     if (!id) return;
-    const ev = events.find(ev => ev.id === id);
-    if (!ev || ev.date === targetDate) return;
+    const ev = events.find(ev=>ev.id===id);
+    if (!ev || ev.date===targetDate) return;
     window._dragJustDropped = true;
     try {
-      await updateDoc(doc(db, 'events', id), { date: targetDate });
+      await updateDoc(doc(db,'events',id),{date:targetDate});
       toast(`📅 Verschoben auf ${formatDate(targetDate)}`);
-    } catch(err) { toast('Fehler beim Verschieben: ' + err.message); }
+    } catch(err){toast('Fehler: '+err.message);}
   };
 
-  // --- Touch (Mobile) ---
+  // ── Mobile: Long-Press then drag ────────────────────────────────────────
+  // touchstart → start 500ms timer. If finger moves before timer: cancel = normal scroll/click.
+  // After 500ms: enter drag mode, show ghost, follow finger, drop on touchend.
   window.onPillTouchStart = function(e, id, title) {
     if (e.touches.length !== 1) return;
+    _longPressActive = false;
     _dragEventId = id;
-    _touchOriginCell = e.currentTarget.closest('.cal-cell');
     const touch = e.touches[0];
-    // Create floating ghost
-    _dragGhost = document.createElement('div');
-    _dragGhost.className = 'drag-ghost';
-    _dragGhost.textContent = title;
-    _dragGhost.style.left = touch.clientX + 'px';
-    _dragGhost.style.top = touch.clientY + 'px';
-    document.body.appendChild(_dragGhost);
-    e.currentTarget.classList.add('dragging');
-    e.preventDefault();
+    const startX = touch.clientX, startY = touch.clientY;
+    const pill = e.currentTarget;
+
+    _longPressTimer = setTimeout(() => {
+      _longPressActive = true;
+      // haptic if supported
+      if (navigator.vibrate) navigator.vibrate(40);
+      // create ghost
+      _dragGhost = document.createElement('div');
+      _dragGhost.className = 'drag-ghost';
+      _dragGhost.textContent = title;
+      _dragGhost.style.left = startX + 'px';
+      _dragGhost.style.top  = startY + 'px';
+      document.body.appendChild(_dragGhost);
+      pill.classList.add('dragging');
+    }, 500);
   };
+
   window.onPillTouchMove = function(e) {
-    if (!_dragGhost || e.touches.length !== 1) return;
-    e.preventDefault();
+    if (e.touches.length !== 1) return;
     const touch = e.touches[0];
+    if (!_longPressActive) {
+      // Check if finger moved significantly → cancel long-press
+      clearTimeout(_longPressTimer);
+      _longPressTimer = null;
+      _dragEventId = null;
+      return;
+    }
+    e.preventDefault(); // prevent page scroll during drag
     _dragGhost.style.left = touch.clientX + 'px';
-    _dragGhost.style.top = touch.clientY + 'px';
-    // Highlight cell under finger
-    document.querySelectorAll('.cal-cell.drag-over').forEach(c => c.classList.remove('drag-over'));
-    const el = document.elementFromPoint(touch.clientX, touch.clientY);
-    const cell = el ? el.closest('.cal-cell') : null;
-    if (cell) cell.classList.add('drag-over');
-  };
-  window.onPillTouchEnd = async function(e) {
-    if (!_dragGhost) return;
-    e.preventDefault();
-    const touch = e.changedTouches[0];
-    // Find target cell under finger
+    _dragGhost.style.top  = touch.clientY + 'px';
+    document.querySelectorAll('.cal-cell.drag-over').forEach(c=>c.classList.remove('drag-over'));
     _dragGhost.style.display = 'none';
     const el = document.elementFromPoint(touch.clientX, touch.clientY);
-    _dragGhost.remove();
-    _dragGhost = null;
-    document.querySelectorAll('.cal-cell.drag-over').forEach(c => c.classList.remove('drag-over'));
-    document.querySelectorAll('.cal-event-pill.dragging').forEach(p => p.classList.remove('dragging'));
-    const cell = el ? el.closest('.cal-cell') : null;
-    const targetDate = cell ? cell.getAttribute('data-date') : null;
+    _dragGhost.style.display = '';
+    el?.closest('.cal-cell')?.classList.add('drag-over');
+  };
+
+  window.onPillTouchEnd = async function(e) {
+    clearTimeout(_longPressTimer);
+    _longPressTimer = null;
+
+    if (!_longPressActive || !_dragGhost) {
+      // Short tap → open event (was not a drag)
+      _longPressActive = false;
+      _dragEventId = null;
+      return;
+    }
+
+    e.preventDefault();
+    const touch = e.changedTouches[0];
+    _dragGhost.style.display = 'none';
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    _dragGhost.remove(); _dragGhost = null;
+    document.querySelectorAll('.cal-cell.drag-over').forEach(c=>c.classList.remove('drag-over'));
+    document.querySelectorAll('.cal-event-pill.dragging').forEach(p=>p.classList.remove('dragging'));
+
+    const cell = el?.closest('.cal-cell');
+    const targetDate = cell?.getAttribute('data-date');
     const id = _dragEventId;
     _dragEventId = null;
+    _longPressActive = false;
+
     if (!targetDate || !id) return;
-    const ev = events.find(ev => ev.id === id);
-    if (!ev || ev.date === targetDate) return;
+    const ev = events.find(ev=>ev.id===id);
+    if (!ev || ev.date===targetDate) return;
     try {
-      await updateDoc(doc(db, 'events', id), { date: targetDate });
+      await updateDoc(doc(db,'events',id),{date:targetDate});
       toast(`📅 Verschoben auf ${formatDate(targetDate)}`);
-    } catch(err) { toast('Fehler beim Verschieben: ' + err.message); }
+    } catch(err){toast('Fehler: '+err.message);}
   };
 
 </script>
