@@ -874,7 +874,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
 
   // ---------- NAVIGATION ----------
   const pageTitles = { dashboard:'Dashboard', calendar:'Kalender',  newtermin:'+ Neuer Termin', bookings:'Alle Buchungen', users:'Benutzerverwaltung', settings:'Einstellungen' };
-  const navOrder = ['dashboard','calendar','newtermin','bookings','users','settings'];
+  const navOrder = ['dashboard','calendar','bookings','newtermin','users','settings'];
   window.navigate = function(page) {
     currentPage = page;
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1671,7 +1671,18 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     if (!ev || ev.date===targetDate) return;
     window._dragJustDropped = true;
     try {
-      await updateDoc(doc(db,'events',id),{date:targetDate});
+      const updateData = {date: targetDate};
+      if (ev.endDate && ev.endDate !== ev.date) {
+        const oldStart = new Date(ev.date + 'T00:00:00');
+        const oldEnd   = new Date(ev.endDate + 'T00:00:00');
+        const diffDays = Math.round((oldEnd - oldStart) / 86400000);
+        const newStart = new Date(targetDate + 'T00:00:00');
+        newStart.setDate(newStart.getDate() + diffDays);
+        updateData.endDate = newStart.toISOString().slice(0,10);
+      } else if (ev.endDate) {
+        updateData.endDate = targetDate;
+      }
+      await updateDoc(doc(db,'events',id), updateData);
       toast(`📅 Verschoben auf ${formatDate(targetDate)}`);
     } catch(err){toast('Fehler: '+err.message);}
   };
@@ -1751,7 +1762,18 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     const ev = events.find(ev=>ev.id===id);
     if (!ev || ev.date===targetDate) return;
     try {
-      await updateDoc(doc(db,'events',id),{date:targetDate});
+      const updateData = {date: targetDate};
+      if (ev.endDate && ev.endDate !== ev.date) {
+        const oldStart = new Date(ev.date + 'T00:00:00');
+        const oldEnd   = new Date(ev.endDate + 'T00:00:00');
+        const diffDays = Math.round((oldEnd - oldStart) / 86400000);
+        const newStart = new Date(targetDate + 'T00:00:00');
+        newStart.setDate(newStart.getDate() + diffDays);
+        updateData.endDate = newStart.toISOString().slice(0,10);
+      } else if (ev.endDate) {
+        updateData.endDate = targetDate;
+      }
+      await updateDoc(doc(db,'events',id), updateData);
       toast(`📅 Verschoben auf ${formatDate(targetDate)}`);
     } catch(err){toast('Fehler: '+err.message);}
   };
