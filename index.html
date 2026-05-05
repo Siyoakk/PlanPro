@@ -927,6 +927,12 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     renderCalendar();
   };
 
+  // Returns true if an event covers a given date string (handles multi-day dateEnd)
+  function eventCoversDate(ev, ds) {
+    if (!ev.dateEnd || ev.dateEnd === ev.date) return ev.date === ds;
+    return ds >= ev.date && ds <= ev.dateEnd;
+  }
+
   function renderCalendar() {
     if (calView === 'day')   return renderDayView();
     if (calView === 'week')  return renderWeekView();
@@ -948,26 +954,39 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     for (let i = 1; i < startDay; i++) {
       const d = new Date(y, m, 1 - (startDay - i));
       const ds = d.toISOString().slice(0,10);
-      html += cellHtml(d.getDate(), ds, events.filter(e => e.date === ds), colMap, true, today);
+      html += cellHtml(d.getDate(), ds, events.filter(e => eventCoversDate(e, ds)), colMap, true, today);
     }
     for (let d = 1; d <= totalDays; d++) {
       const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      html += cellHtml(d, ds, events.filter(e => e.date === ds), colMap, false, today);
+      html += cellHtml(d, ds, events.filter(e => eventCoversDate(e, ds)), colMap, false, today);
     }
     html += '</div>';
     document.getElementById('cal-view-container').innerHTML = html;
   }
   function cellHtml(dayNum, ds, dayEvs, colMap, otherMonth, today) {
     const isToday = ds === today;
-    const pills = dayEvs.slice(0,2).map(e => `<div class="cal-event-pill ${colMap[e.color||0]} ${e.completed ? 'completed' : ''}"
-      draggable="true" data-event-id="${e.id}" data-event-title="${esc(e.title)}"
-      onclick="viewEvent('${e.id}');event.stopPropagation()"
-      ondragstart="onPillDragStart(event,'${e.id}','${esc(e.title)}')"
-      ondragend="onPillDragEnd(event)"
-      ontouchstart="onPillTouchStart(event,'${e.id}','${esc(e.title)}')"
-      ontouchmove="onPillTouchMove(event)"
-      ontouchend="onPillTouchEnd(event)"
-    >${esc(e.title)}</div>`).join('');
+    const pills = dayEvs.slice(0,2).map(e => {
+      const isMulti = e.dateEnd && e.dateEnd !== e.date;
+      const isFirst = e.date === ds;
+      const isLast  = !e.dateEnd || e.dateEnd === ds;
+      let extraStyle = '';
+      if (isMulti) {
+        if (isFirst)       extraStyle = 'border-radius:4px 0 0 4px;margin-right:-2px;';
+        else if (isLast)   extraStyle = 'border-radius:0 4px 4px 0;margin-left:-2px;';
+        else               extraStyle = 'border-radius:0;margin-left:-2px;margin-right:-2px;';
+      }
+      const label = isFirst || !isMulti ? esc(e.title) : (isLast ? '↳ '+esc(e.title) : '···');
+      return `<div class="cal-event-pill ${colMap[e.color||0]} ${e.completed ? 'completed' : ''}"
+        draggable="true" data-event-id="${e.id}" data-event-title="${esc(e.title)}"
+        style="${extraStyle}"
+        onclick="viewEvent('${e.id}');event.stopPropagation()"
+        ondragstart="onPillDragStart(event,'${e.id}','${esc(e.title)}')"
+        ondragend="onPillDragEnd(event)"
+        ontouchstart="onPillTouchStart(event,'${e.id}','${esc(e.title)}')"
+        ontouchmove="onPillTouchMove(event)"
+        ontouchend="onPillTouchEnd(event)"
+      >${label}</div>`;
+    }).join('');
     const more = dayEvs.length > 2 ? `<div style="font-size:.64rem;color:var(--text3)">+${dayEvs.length-2} weitere</div>` : '';
     return `<div class="cal-cell${otherMonth ? ' other-month' : ''}${isToday ? ' today' : ''}${dayEvs.length ? ' has-events' : ''}"
       data-date="${ds}" onclick="calCellClick(event,'${ds}')"
@@ -990,7 +1009,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     jump.type = 'date'; jump.value = ds;
 
     const colMap = ['var(--accent)','var(--accent2)','var(--accent3)'];
-    const dayEvs = events.filter(e => e.date === ds)
+    const dayEvs = events.filter(e => eventCoversDate(e, ds))
                          .sort((a,b)=>(a.time||'00:00').localeCompare(b.time||'00:00'));
     const timedEvs   = dayEvs.filter(e => e.time);
     const untimedEvs = dayEvs.filter(e => !e.time);
@@ -1122,7 +1141,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     // ── Build event blocks per day (column-relative positioning) ──────────────
     // Returns HTML for all events in one day column, positioned within that column.
     function buildDayBlocks(ds) {
-      const dayEvs = events.filter(e => e.date===ds && e.time)
+      const dayEvs = events.filter(e => eventCoversDate(e, ds) && e.time)
                            .sort((a,b) => a.time.localeCompare(b.time));
       if (!dayEvs.length) return '';
 
@@ -1335,7 +1354,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
         <div class="event-detail-dot ${colMap[ev.color||0]}"></div>
         <h2 style="margin:0;font-size:1.4rem">${esc(ev.title)}</h2>
       </div>
-      <div class="detail-row"><div class="detail-icon">📅</div><div><div class="detail-label">Datum</div><div class="detail-val">${formatDate(ev.date)}</div></div></div>
+      <div class="detail-row"><div class="detail-icon">📅</div><div><div class="detail-label">Datum</div><div class="detail-val">${formatDate(ev.date)}${ev.dateEnd && ev.dateEnd !== ev.date ? ' – ' + formatDate(ev.dateEnd) : ''}</div></div></div>
       <div class="detail-row"><div class="detail-icon">🕐</div><div><div class="detail-label">Uhrzeit</div><div class="detail-val">${esc(ev.time)} Uhr${ev.timeEnd ? ' – ' + esc(ev.timeEnd) + ' Uhr' : ''}</div></div></div>
       <div class="detail-row"><div class="detail-icon">🏷️</div><div><div class="detail-label">Kategorie</div><div class="detail-val"><span class="badge ${catBadge[ev.category] || 'badge-blue'}">${esc(ev.category)}</span></div></div></div>
       <div class="detail-row" style="flex-direction:column;gap:6px">
@@ -1353,7 +1372,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
 
   window.openNewEventModal = function(date = '') {
     editingEventId = null;
-    showEventModal({ title:'', date: date || todayStr(), time:'09:00', category:'Arbeit', note:'', color:0, completed: false }, false);
+    const _d = date || todayStr(); showEventModal({ title:'', date: _d, dateEnd: _d, time:'09:00', category:'Arbeit', note:'', color:0, completed: false }, false);
   };
   window.editEvent = async function(id) {
     const ev = events.find(e => e.id === id);
@@ -1368,11 +1387,12 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       <h2>${isEdit ? 'Termin bearbeiten' : 'Neuer Termin'}</h2>
       <div class="form-group"><label>Titel</label><input type="text" id="ev-title" value="${esc(ev.title)}" placeholder="Termintitel"></div>
       <div class="form-row">
-        <div class="form-group"><label>Datum</label><input type="date" id="ev-date" value="${ev.date}"></div>
+        <div class="form-group"><label>📅 Datum Von</label><input type="date" id="ev-date" value="${ev.date}" onchange="onDateFromChange()"></div>
+        <div class="form-group"><label>📅 Datum Bis</label><input type="date" id="ev-date-end" value="${ev.dateEnd || ev.date}"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Uhrzeit Von</label><input type="time" id="ev-time" value="${ev.time}"></div>
-        <div class="form-group"><label>Uhrzeit Bis</label><input type="time" id="ev-time-end" value="${ev.timeEnd || ''}"></div>
+        <div class="form-group"><label>🕐 Uhrzeit Von</label><input type="time" id="ev-time" value="${ev.time}"></div>
+        <div class="form-group"><label>🕐 Uhrzeit Bis</label><input type="time" id="ev-time-end" value="${ev.timeEnd || ''}"></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>Kategorie</label><select id="ev-cat">${catOpts}</select></div>
@@ -1388,12 +1408,19 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     openModal();
     setTimeout(() => { const t = document.getElementById('ev-title'); if(t) t.focus(); }, 100);
   }
+  // Keep dateEnd in sync: if user changes dateFrom to be after dateTo, advance dateTo
+  window.onDateFromChange = function() {
+    const from = document.getElementById('ev-date').value;
+    const toEl  = document.getElementById('ev-date-end');
+    if (toEl && from && toEl.value < from) toEl.value = from;
+  };
   window.saveEvent = async function() {
     const title = document.getElementById('ev-title').value.trim();
     if (!title) { toast("Bitte Titel eingeben"); return; }
     const eventData = {
       title,
       date: document.getElementById('ev-date').value,
+      dateEnd: document.getElementById('ev-date-end').value || document.getElementById('ev-date').value,
       time: document.getElementById('ev-time').value,
       timeEnd: document.getElementById('ev-time-end').value || '',
       category: document.getElementById('ev-cat').value,
@@ -1449,7 +1476,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       tbody.innerHTML = filtered.map(e => `
         <tr class="${e.completed ? 'completed' : ''}">
           <td style="cursor:pointer;font-weight:600" onclick="viewEvent('${e.id}')">${esc(e.title)}</td>
-          <td>${formatDate(e.date)}</td>
+          <td>${formatDate(e.date)}${e.dateEnd && e.dateEnd !== e.date ? ' – ' + formatDate(e.dateEnd) : ''}</td>
           <td>${esc(e.time)}${e.timeEnd ? ' – ' + esc(e.timeEnd) : ''}</td>
           <td><span class="badge ${catBadge[e.category] || 'badge-blue'}">${esc(e.category)}</span></td>
           <td class="hide-mobile">${esc(e.note || '—')}</td>
