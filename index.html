@@ -40,13 +40,28 @@ body.no-animations .modal { animation:none !important; }
 body.no-animations .btn { transition:none !important; }
 
 /* LOGIN */
-#login-screen { min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--bg); background-image:radial-gradient(ellipse at 20% 50%,rgba(108,99,255,.18) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(255,101,132,.12) 0%,transparent 50%); }
+#login-screen, #register-screen { min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--bg); background-image:radial-gradient(ellipse at 20% 50%,rgba(108,99,255,.18) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(255,101,132,.12) 0%,transparent 50%); }
+#register-screen { display:none; }
 .login-box { background:var(--surface); border:1px solid var(--border); border-radius:24px; padding:48px 40px; width:100%; max-width:420px; box-shadow:var(--shadow); }
 .login-logo { font-family:var(--font-head); font-size:2.4rem; color:var(--accent); margin-bottom:6px; }
 .login-sub { color:var(--text2); font-size:.9rem; margin-bottom:32px; }
 .login-box label { display:block; font-size:.78rem; font-weight:600; letter-spacing:.08em; color:var(--text2); text-transform:uppercase; margin-bottom:6px; }
 .login-box input { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; color:var(--text); font-family:var(--font); font-size:.95rem; outline:none; transition:border-color .2s; margin-bottom:18px; }
 .login-box input:focus { border-color:var(--accent); }
+.pw-wrap { position:relative; margin-bottom:18px; }
+.pw-wrap input { margin-bottom:0 !important; padding-right:44px !important; }
+.pw-toggle { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:var(--text3); font-size:1.1rem; padding:4px; line-height:1; transition:color .15s; }
+.pw-toggle:hover { color:var(--accent); }
+.pw-strength { height:4px; border-radius:99px; margin-top:6px; margin-bottom:18px; background:var(--border); overflow:hidden; }
+.pw-strength-bar { height:100%; border-radius:99px; transition:width .3s, background .3s; width:0%; }
+.pw-strength-label { font-size:.7rem; color:var(--text3); margin-top:4px; margin-bottom:12px; min-height:16px; }
+.register-steps { display:flex; gap:6px; margin-bottom:28px; }
+.reg-step { flex:1; height:3px; border-radius:99px; background:var(--border); transition:background .3s; }
+.reg-step.done { background:var(--accent); }
+.reg-check { font-size:.72rem; color:var(--text3); margin-bottom:4px; display:flex; align-items:center; gap:6px; transition:color .2s; }
+.reg-check.ok { color:#2ecc71; }
+.reg-check::before { content:'○'; font-size:.8rem; }
+.reg-check.ok::before { content:'✓'; }
 .login-btn { width:100%; background:var(--accent); border:none; border-radius:var(--radius-sm); padding:13px; color:#fff; font-family:var(--font); font-size:1rem; font-weight:600; cursor:pointer; transition:opacity .2s,transform .1s; }
 .login-btn:hover { opacity:.9; } .login-btn:active { transform:scale(.98); }
 .login-err { color:var(--accent2); font-size:.85rem; margin-top:-12px; margin-bottom:12px; display:none; }
@@ -322,10 +337,51 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     <div class="login-logo">SiyoPlan</div>
     <div class="login-sub">Synchronisiert – Jetzt anmelden</div>
     <div><label>Benutzername</label><input type="text" id="login-user" placeholder="Benutzername" autocomplete="username"></div>
-    <div><label>Passwort</label><input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"></div>
+    <div class="pw-wrap"><input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"><button type="button" class="pw-toggle" onclick="togglePw('login-pass',this)" tabindex="-1">👁</button></div>
     <div class="login-err" id="login-err">❌ Ungültige Anmeldedaten</div>
     <button class="login-btn" onclick="doLogin()">Anmelden</button>
-    <button class="btn btn-ghost" onclick="doRegister()" style="margin-top:12px; width:100%">🔐 Neuen Account erstellen</button>
+    <button class="btn btn-ghost" onclick="showRegisterScreen()" style="margin-top:12px; width:100%">🔐 Neuen Account erstellen</button>
+  </div>
+</div>
+
+<div id="register-screen">
+  <div class="login-box">
+    <button onclick="showLoginScreen()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:.82rem;margin-bottom:16px;padding:0;display:flex;align-items:center;gap:4px;">‹ Zurück zur Anmeldung</button>
+    <div class="login-logo">SiyoPlan</div>
+    <div class="login-sub">Neues Konto erstellen</div>
+
+    <div class="register-steps">
+      <div class="reg-step done" id="rstep-1"></div>
+      <div class="reg-step" id="rstep-2"></div>
+      <div class="reg-step" id="rstep-3"></div>
+    </div>
+
+    <div><label>Benutzername</label>
+      <input type="text" id="reg-user" placeholder="Benutzername wählen" autocomplete="username"
+        oninput="onRegInput()" style="margin-bottom:18px"></div>
+
+    <div><label>Passwort</label>
+      <div class="pw-wrap">
+        <input type="password" id="reg-pass" placeholder="Passwort wählen" autocomplete="new-password" oninput="onRegInput()">
+        <button type="button" class="pw-toggle" onclick="togglePw('reg-pass',this)" tabindex="-1">👁</button>
+      </div>
+      <div class="pw-strength"><div class="pw-strength-bar" id="pw-bar"></div></div>
+      <div class="pw-strength-label" id="pw-label"></div>
+      <div class="reg-check" id="rc-len">Mindestens 8 Zeichen</div>
+      <div class="reg-check" id="rc-upper">Groß- und Kleinbuchstaben</div>
+      <div class="reg-check" id="rc-num">Mindestens eine Zahl</div>
+    </div>
+
+    <div><label>Passwort bestätigen</label>
+      <div class="pw-wrap">
+        <input type="password" id="reg-pass2" placeholder="Passwort wiederholen" autocomplete="new-password" oninput="onRegInput()">
+        <button type="button" class="pw-toggle" onclick="togglePw('reg-pass2',this)" tabindex="-1">👁</button>
+      </div>
+    </div>
+    <div class="reg-check" id="rc-match">Passwörter stimmen überein</div>
+
+    <div class="login-err" id="reg-err" style="margin-top:16px"></div>
+    <button class="login-btn" onclick="doRegisterNew()" style="margin-top:20px">✅ Konto erstellen</button>
   </div>
 </div>
 
@@ -579,18 +635,102 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       toast("❌ Login fehlgeschlagen");
     }
   };
-  window.doRegister = async function() {
-    const username = document.getElementById('login-user').value.trim();
-    const password = document.getElementById('login-pass').value;
-    const email = username + "@planpro.local";
-    if (!username || !password) { toast("Bitte Benutzername und Passwort eingeben"); return; }
+  // ── Screen switching ──────────────────────────────────────────────────────
+  window.showRegisterScreen = function() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('register-screen').style.display = 'flex';
+    setTimeout(()=>{ const u=document.getElementById('reg-user'); if(u)u.focus(); },100);
+  };
+  window.showLoginScreen = function() {
+    document.getElementById('register-screen').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+  };
+
+  // ── Password visibility toggle ────────────────────────────────────────────
+  window.togglePw = function(inputId, btn) {
+    const inp = document.getElementById(inputId);
+    if (!inp) return;
+    const show = inp.type === 'password';
+    inp.type = show ? 'text' : 'password';
+    btn.textContent = show ? '🙈' : '👁';
+  };
+
+  // ── Password strength checker ─────────────────────────────────────────────
+  function pwStrength(pw) {
+    let score = 0;
+    if (pw.length >= 8)  score++;
+    if (pw.length >= 12) score++;
+    if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+    if (/\d/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+    return score;
+  }
+
+  window.onRegInput = function() {
+    const user  = document.getElementById('reg-user').value.trim();
+    const pw    = document.getElementById('reg-pass').value;
+    const pw2   = document.getElementById('reg-pass2').value;
+    const bar   = document.getElementById('pw-bar');
+    const lbl   = document.getElementById('pw-label');
+    // strength bar
+    const score = pwStrength(pw);
+    const pct   = Math.min(100, score * 20);
+    const colors = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#27ae60'];
+    const labels = ['','Sehr schwach','Schwach','Mittel','Stark','Sehr stark'];
+    bar.style.width   = pw ? pct+'%' : '0%';
+    bar.style.background = pw ? (colors[Math.max(0,score-1)] || '#2ecc71') : 'transparent';
+    lbl.textContent   = pw ? (labels[score] || 'Sehr stark') : '';
+    // checklist
+    const setCheck = (id, ok) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.toggle('ok', ok);
+    };
+    setCheck('rc-len',   pw.length >= 8);
+    setCheck('rc-upper', /[A-Z]/.test(pw) && /[a-z]/.test(pw));
+    setCheck('rc-num',   /\d/.test(pw));
+    setCheck('rc-match', pw && pw2 && pw === pw2);
+    // progress steps
+    const step1 = user.length >= 3;
+    const step2 = pw.length >= 8;
+    const step3 = pw && pw2 && pw === pw2;
+    document.getElementById('rstep-1').classList.toggle('done', step1);
+    document.getElementById('rstep-2').classList.toggle('done', step2);
+    document.getElementById('rstep-3').classList.toggle('done', step3);
+  };
+
+  // ── Register submit ───────────────────────────────────────────────────────
+  window.doRegisterNew = async function() {
+    const username = document.getElementById('reg-user').value.trim();
+    const pw       = document.getElementById('reg-pass').value;
+    const pw2      = document.getElementById('reg-pass2').value;
+    const errEl    = document.getElementById('reg-err');
+    errEl.style.display = 'none';
+
+    const showErr = (msg) => {
+      errEl.textContent = '❌ ' + msg;
+      errEl.style.display = 'block';
+    };
+
+    if (!username || username.length < 3) return showErr('Benutzername muss mindestens 3 Zeichen haben.');
+    if (!pw || pw.length < 8)            return showErr('Passwort muss mindestens 8 Zeichen haben.');
+    if (pw !== pw2)                      return showErr('Passwörter stimmen nicht überein.');
+
+    const email = username + '@planpro.local';
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      toast("✅ Account erstellt! Jetzt anmelden.");
+      await createUserWithEmailAndPassword(auth, email, pw);
+      toast('✅ Konto erstellt! Du bist jetzt angemeldet.');
+      showLoginScreen();
     } catch (err) {
-      toast("Fehler: " + err.message);
+      let msg = err.message;
+      if (err.code === 'auth/email-already-in-use') msg = 'Benutzername bereits vergeben.';
+      if (err.code === 'auth/weak-password')         msg = 'Passwort ist zu schwach.';
+      showErr(msg);
     }
   };
+
+  // Keep old doRegister for backwards compat (now just shows new screen)
+  window.doRegister = window.showRegisterScreen;
   window.doLogout = function() {
     if (confirm("Wirklich abmelden?")) signOut(auth);
     closeSidebar();
@@ -955,6 +1095,128 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
   }
 
 
+
+  // ── WEEK VIEW ───────────────────────────────────────────────────────────────
+  const WEEK_HOUR_H = 48; // px per hour
+
+  function renderWeekView() {
+    const today = todayStr();
+    const d = new Date(calDate);
+    const dow = d.getDay() || 7;
+    d.setDate(d.getDate() - dow + 1);
+    const weekDays = Array.from({length:7}, (_,i) => {
+      const x = new Date(d); x.setDate(d.getDate()+i); return x;
+    });
+    const weekLabel = `${weekDays[0].toLocaleDateString('de-DE',{day:'numeric',month:'short'})} – ${weekDays[6].toLocaleDateString('de-DE',{day:'numeric',month:'short',year:'numeric'})}`;
+    document.getElementById('cal-month-label').textContent = weekLabel;
+    const jump = document.getElementById('cal-jump');
+    jump.type = 'date'; jump.value = calDate.toISOString().slice(0,10);
+    const colMap = ['var(--accent)','var(--accent2)','var(--accent3)'];
+    const dayNames = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+
+    // ── header ──
+    let headerHtml = `<div style="background:var(--surface2);border-right:1px solid var(--border);border-bottom:1px solid var(--border);"></div>`;
+    weekDays.forEach((wd,i) => {
+      const ds = wd.toISOString().slice(0,10);
+      const isToday = ds === today;
+      headerHtml += `<div class="week-header-cell${isToday?' wh-today':''}">
+        <div class="wh-name">${dayNames[i]}</div>
+        <div class="wh-num" onclick="switchToDayView('${ds}')">${wd.getDate()}</div>
+      </div>`;
+    });
+
+    // ── hour-slot grid ──
+    let gridHtml = '';
+    for (let h = 0; h < 24; h++) {
+      gridHtml += `<div class="week-hour-label">${h===0?'':String(h).padStart(2,'0')}</div>`;
+      weekDays.forEach(wd => {
+        const ds = wd.toISOString().slice(0,10);
+        gridHtml += `<div class="week-day-col">
+          <div class="week-hour-slot"
+            data-date="${ds}" data-hour="${h}"
+            onclick="openNewEventModalTime('${ds}','${String(h).padStart(2,'0')}:00')"></div>
+        </div>`;
+      });
+    }
+
+    // ── event blocks with overlap layout per day ──
+    let eventBlocksHtml = '';
+    weekDays.forEach((wd, dayIdx) => {
+      const ds = wd.toISOString().slice(0,10);
+      const dayEvs = events.filter(e => e.date===ds && e.time)
+                           .sort((a,b) => a.time.localeCompare(b.time));
+      const placed = [];
+      dayEvs.forEach(e => {
+        const [sh,sm] = e.time.split(':').map(Number);
+        const startMin = sh*60+sm;
+        const rawEnd = e.timeEnd
+          ? (()=>{const[eh,em]=e.timeEnd.split(':').map(Number);return eh*60+em;})()
+          : startMin+60;
+        const endMin = Math.max(rawEnd, startMin+30);
+        const top    = Math.round((startMin/60)*WEEK_HOUR_H) + 56;
+        const height = Math.max(Math.round(((endMin-startMin)/60)*WEEK_HOUR_H), 18);
+        let col = 0;
+        while (placed.some(p=>p.col===col&&startMin<p.endMin&&endMin>p.startMin)) col++;
+        placed.push({startMin,endMin,col});
+        const totalCols = placed.filter(p=>startMin<p.endMin&&endMin>p.startMin)
+                                .reduce((m,p)=>Math.max(m,p.col),0)+1;
+        const dayColW = 100/7;
+        const subColW = dayColW/totalCols;
+        const leftPct = dayIdx*dayColW + col*subColW;
+        eventBlocksHtml += `<div class="week-event-block"
+          style="top:${top}px;height:${height}px;background:${colMap[e.color||0]};
+                 position:absolute;left:calc(52px + ${leftPct}%);width:calc(${subColW}% - 4px);"
+          onclick="viewEvent('${e.id}');event.stopPropagation()">
+          <div class="web-title">${esc(e.title)}</div>
+          <div class="web-time">${esc(e.time)}${e.timeEnd?' – '+esc(e.timeEnd):''}</div>
+        </div>`;
+      });
+    });
+
+    // ── current-time bar ──
+    const now=new Date(), nowDs=now.toISOString().slice(0,10);
+    const todayIdx=weekDays.findIndex(w=>w.toISOString().slice(0,10)===nowDs);
+    let nowBarHtml='';
+    if(todayIdx>=0){
+      const mins=now.getHours()*60+now.getMinutes();
+      const top=Math.round((mins/60)*WEEK_HOUR_H)+56;
+      const leftPct=todayIdx*(100/7);
+      nowBarHtml=`<div style="position:absolute;top:${top}px;left:calc(52px + ${leftPct}%);width:calc(${100/7}%);height:2px;background:var(--accent2);z-index:10;pointer-events:none;">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--accent2);position:absolute;left:-4px;top:-3px;"></div>
+      </div>`;
+    }
+
+    document.getElementById('cal-view-container').innerHTML = `
+      <div style="overflow-x:auto;">
+        <div style="min-width:520px;">
+          <div style="display:grid;grid-template-columns:52px repeat(7,1fr);
+                      border:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;
+                      overflow:hidden;background:var(--surface);">
+            ${headerHtml}
+          </div>
+          <div id="week-scroll" style="position:relative;overflow-y:auto;max-height:580px;
+               border:1px solid var(--border);border-top:none;
+               border-radius:0 0 var(--radius) var(--radius);">
+            <div style="display:grid;grid-template-columns:52px repeat(7,1fr);">
+              ${gridHtml}
+            </div>
+            ${eventBlocksHtml}
+            ${nowBarHtml}
+          </div>
+        </div>
+      </div>`;
+
+    // fix pointer-events so blocks are clickable over the grid
+    document.querySelectorAll('.week-event-block').forEach(b => b.style.pointerEvents = 'auto');
+
+    // scroll to current time / 8am
+    setTimeout(()=>{
+      const sc = document.getElementById('week-scroll');
+      if (!sc) return;
+      const now = new Date();
+      sc.scrollTop = Math.max(0, Math.round((now.getHours()*60+now.getMinutes())/60*WEEK_HOUR_H) - 100);
+    }, 50);
+  }
 
   window.switchToDayView = function(ds) {
     calDate = new Date(ds);
