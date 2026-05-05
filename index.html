@@ -1399,7 +1399,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
         <div class="form-group"><label>Farbe</label><select id="ev-color">${colorOpts}</select></div>
       </div>
       <div class="form-group"><label>Notiz</label><textarea id="ev-note" rows="3">${esc(ev.note || '')}</textarea></div>
-      <div class="form-group"><label><input type="checkbox" id="ev-completed" ${ev.completed ? 'checked' : ''}> Erledigt</label></div>
+      <div class="form-group"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="ev-completed" ${ev.completed ? 'checked' : ''}> <span>Erledigt</span></label></div>
       <div class="modal-actions">
         ${isEdit ? `<button class="btn btn-danger" onclick="deleteEvent('${editingEventId}');closeModal()">🗑️ Löschen</button>` : ''}
         <button class="btn btn-ghost" onclick="closeModal()">Abbrechen</button>
@@ -1672,15 +1672,15 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     window._dragJustDropped = true;
     try {
       const updateData = {date: targetDate};
-      if (ev.endDate && ev.endDate !== ev.date) {
+      if (ev.dateEnd && ev.dateEnd !== ev.date) {
         const oldStart = new Date(ev.date + 'T00:00:00');
-        const oldEnd   = new Date(ev.endDate + 'T00:00:00');
+        const oldEnd   = new Date(ev.dateEnd + 'T00:00:00');
         const diffDays = Math.round((oldEnd - oldStart) / 86400000);
         const newStart = new Date(targetDate + 'T00:00:00');
         newStart.setDate(newStart.getDate() + diffDays);
-        updateData.endDate = newStart.toISOString().slice(0,10);
-      } else if (ev.endDate) {
-        updateData.endDate = targetDate;
+        updateData.dateEnd = newStart.toISOString().slice(0,10);
+      } else if (ev.dateEnd) {
+        updateData.dateEnd = targetDate;
       }
       await updateDoc(doc(db,'events',id), updateData);
       toast(`📅 Verschoben auf ${formatDate(targetDate)}`);
@@ -1763,15 +1763,15 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     if (!ev || ev.date===targetDate) return;
     try {
       const updateData = {date: targetDate};
-      if (ev.endDate && ev.endDate !== ev.date) {
+      if (ev.dateEnd && ev.dateEnd !== ev.date) {
         const oldStart = new Date(ev.date + 'T00:00:00');
-        const oldEnd   = new Date(ev.endDate + 'T00:00:00');
+        const oldEnd   = new Date(ev.dateEnd + 'T00:00:00');
         const diffDays = Math.round((oldEnd - oldStart) / 86400000);
         const newStart = new Date(targetDate + 'T00:00:00');
         newStart.setDate(newStart.getDate() + diffDays);
-        updateData.endDate = newStart.toISOString().slice(0,10);
-      } else if (ev.endDate) {
-        updateData.endDate = targetDate;
+        updateData.dateEnd = newStart.toISOString().slice(0,10);
+      } else if (ev.dateEnd) {
+        updateData.dateEnd = targetDate;
       }
       await updateDoc(doc(db,'events',id), updateData);
       toast(`📅 Verschoben auf ${formatDate(targetDate)}`);
