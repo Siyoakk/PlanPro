@@ -1097,7 +1097,11 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
 
 
   // ── WEEK VIEW ───────────────────────────────────────────────────────────────
-  const WEEK_HOUR_H = 48; // px per hour
+  // Each event block lives INSIDE its day column (position:absolute within the
+  // column container) so position is always column-relative — no cross-container
+  // percentage math needed. Height is always WEEK_HOUR_H px (= 1 h) so all
+  // events are the same size regardless of duration.
+  const WEEK_HOUR_H = 48; // px per hour — DO NOT change without updating both grid and blocks
 
   function renderWeekView() {
     const today = todayStr();
@@ -1113,38 +1117,15 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     jump.type = 'date'; jump.value = calDate.toISOString().slice(0,10);
     const colMap = ['var(--accent)','var(--accent2)','var(--accent3)'];
     const dayNames = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+    const TOTAL_H = 24 * WEEK_HOUR_H; // total grid height in px
 
-    // ── header ──
-    let headerHtml = `<div style="background:var(--surface2);border-right:1px solid var(--border);border-bottom:1px solid var(--border);"></div>`;
-    weekDays.forEach((wd,i) => {
-      const ds = wd.toISOString().slice(0,10);
-      const isToday = ds === today;
-      headerHtml += `<div class="week-header-cell${isToday?' wh-today':''}">
-        <div class="wh-name">${dayNames[i]}</div>
-        <div class="wh-num" onclick="switchToDayView('${ds}')">${wd.getDate()}</div>
-      </div>`;
-    });
-
-    // ── hour-slot grid ──
-    let gridHtml = '';
-    for (let h = 0; h < 24; h++) {
-      gridHtml += `<div class="week-hour-label">${h===0?'':String(h).padStart(2,'0')}</div>`;
-      weekDays.forEach(wd => {
-        const ds = wd.toISOString().slice(0,10);
-        gridHtml += `<div class="week-day-col">
-          <div class="week-hour-slot"
-            data-date="${ds}" data-hour="${h}"
-            onclick="openNewEventModalTime('${ds}','${String(h).padStart(2,'0')}:00')"></div>
-        </div>`;
-      });
-    }
-
-    // ── event blocks with overlap layout per day ──
-    let eventBlocksHtml = '';
-    weekDays.forEach((wd, dayIdx) => {
-      const ds = wd.toISOString().slice(0,10);
+    // ── Build event blocks per day (column-relative positioning) ──────────────
+    // Returns HTML for all events in one day column, positioned within that column.
+    function buildDayBlocks(ds) {
       const dayEvs = events.filter(e => e.date===ds && e.time)
                            .sort((a,b) => a.time.localeCompare(b.time));
+      if (!dayEvs.length) return '';
+      // Assign overlap columns
       const placed = [];
       dayEvs.forEach(e => {
         const [sh,sm] = e.time.split(':').map(Number);
@@ -1153,69 +1134,121 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
           ? (()=>{const[eh,em]=e.timeEnd.split(':').map(Number);return eh*60+em;})()
           : startMin+60;
         const endMin = Math.max(rawEnd, startMin+30);
-        const top    = Math.round((startMin/60)*WEEK_HOUR_H) + 56;
-        const height = Math.max(Math.round(((endMin-startMin)/60)*WEEK_HOUR_H), 18);
         let col = 0;
         while (placed.some(p=>p.col===col&&startMin<p.endMin&&endMin>p.startMin)) col++;
-        placed.push({startMin,endMin,col});
-        const totalCols = placed.filter(p=>startMin<p.endMin&&endMin>p.startMin)
-                                .reduce((m,p)=>Math.max(m,p.col),0)+1;
-        const dayColW = 100/7;
-        const subColW = dayColW/totalCols;
-        const leftPct = dayIdx*dayColW + col*subColW;
-        eventBlocksHtml += `<div class="week-event-block"
-          style="top:${top}px;height:${height}px;background:${colMap[e.color||0]};
-                 position:absolute;left:calc(52px + ${leftPct}%);width:calc(${subColW}% - 4px);"
+        placed.push({e, startMin, endMin, col});
+      });
+      // Render — height is always WEEK_HOUR_H (uniform), top is time-based
+      return placed.map(({e, startMin, col}) => {
+        const totalCols = placed.filter(p=>p.startMin<placed.find(x=>x.e===e).endMin&&placed.find(x=>x.e===e).startMin<p.endMin).reduce((m,p)=>Math.max(m,p.col),0)+1;
+        const top = Math.round((startMin/60)*WEEK_HOUR_H);
+        const colW = 100/totalCols;
+        const left = `${col*colW}%`;
+        const width = `calc(${colW}% - 3px)`;
+        return `<div class="week-event-block"
+          style="position:absolute;top:${top}px;height:${WEEK_HOUR_H}px;
+                 background:${colMap[e.color||0]};left:${left};width:${width};pointer-events:auto;"
           onclick="viewEvent('${e.id}');event.stopPropagation()">
           <div class="web-title">${esc(e.title)}</div>
           <div class="web-time">${esc(e.time)}${e.timeEnd?' – '+esc(e.timeEnd):''}</div>
         </div>`;
-      });
+      }).join('');
+    }
+
+    // ── Build the full grid as a single HTML table-like structure ─────────────
+    // Layout: one wrapper div with display:grid(52px + 7 equal cols).
+    // Each column contains 24 hour-cells (height:WEEK_HOUR_H each) stacked,
+    // plus a position:absolute overlay for the event blocks.
+
+    // Header row
+    let headerCols = `<div style="width:52px;flex-shrink:0;background:var(--surface2);border-right:1px solid var(--border);border-bottom:1px solid var(--border);height:56px;"></div>`;
+    weekDays.forEach((wd,i) => {
+      const ds = wd.toISOString().slice(0,10);
+      const isToday = ds === today;
+      headerCols += `<div class="week-header-cell${isToday?' wh-today':''}" style="flex:1;min-width:0;">
+        <div class="wh-name">${dayNames[i]}</div>
+        <div class="wh-num" onclick="switchToDayView('${ds}')">${wd.getDate()}</div>
+      </div>`;
     });
 
-    // ── current-time bar ──
-    const now=new Date(), nowDs=now.toISOString().slice(0,10);
-    const todayIdx=weekDays.findIndex(w=>w.toISOString().slice(0,10)===nowDs);
-    let nowBarHtml='';
-    if(todayIdx>=0){
-      const mins=now.getHours()*60+now.getMinutes();
-      const top=Math.round((mins/60)*WEEK_HOUR_H)+56;
-      const leftPct=todayIdx*(100/7);
-      nowBarHtml=`<div style="position:absolute;top:${top}px;left:calc(52px + ${leftPct}%);width:calc(${100/7}%);height:2px;background:var(--accent2);z-index:10;pointer-events:none;">
-        <div style="width:8px;height:8px;border-radius:50%;background:var(--accent2);position:absolute;left:-4px;top:-3px;"></div>
+    // Body: time label column + 7 day columns side by side
+    // Time labels
+    let timeLabels = '';
+    for (let h=0; h<24; h++) {
+      timeLabels += `<div style="height:${WEEK_HOUR_H}px;display:flex;align-items:flex-start;justify-content:flex-end;padding:3px 6px 0 0;font-size:.65rem;color:var(--text3);font-weight:600;border-bottom:1px solid var(--border);box-sizing:border-box;">${h===0?'':String(h).padStart(2,'0')}</div>`;
+    }
+
+    // Day columns
+    let dayCols = '';
+    weekDays.forEach((wd, dayIdx) => {
+      const ds = wd.toISOString().slice(0,10);
+      // Hour slots (for click-to-create and visual grid lines)
+      let slots = '';
+      for (let h=0; h<24; h++) {
+        slots += `<div style="height:${WEEK_HOUR_H}px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);box-sizing:border-box;cursor:pointer;"
+          onclick="openNewEventModalTime('${ds}','${String(h).padStart(2,'0')}:00')"></div>`;
+      }
+      // Event overlay (position:relative wrapper, events are absolute inside)
+      const blocks = buildDayBlocks(ds);
+      dayCols += `<div style="flex:1;min-width:0;position:relative;">
+        ${slots}
+        <div style="position:absolute;inset:0;pointer-events:none;">${blocks}</div>
       </div>`;
+    });
+
+    // Current-time line
+    const now=new Date(), nowDs=now.toISOString().slice(0,10);
+    const todayDayIdx=weekDays.findIndex(w=>w.toISOString().slice(0,10)===nowDs);
+    let nowLineHtml='';
+    if(todayDayIdx>=0){
+      const mins=now.getHours()*60+now.getMinutes();
+      const top=Math.round((mins/60)*WEEK_HOUR_H);
+      // The time line goes only over the today column.
+      // We inject it via JS after render (easier to get pixel position).
+      nowLineHtml = `<div id="week-now-marker" data-day="${todayDayIdx}" data-top="${top}" style="display:none"></div>`;
     }
 
     document.getElementById('cal-view-container').innerHTML = `
-      <div style="overflow-x:auto;">
-        <div style="min-width:520px;">
-          <div style="display:grid;grid-template-columns:52px repeat(7,1fr);
-                      border:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;
-                      overflow:hidden;background:var(--surface);">
-            ${headerHtml}
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+        <div style="min-width:420px;">
+          <div style="display:flex;border:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;overflow:hidden;background:var(--surface);position:sticky;top:0;z-index:20;">
+            ${headerCols}
           </div>
-          <div id="week-scroll" style="position:relative;overflow-y:auto;max-height:580px;
-               border:1px solid var(--border);border-top:none;
-               border-radius:0 0 var(--radius) var(--radius);">
-            <div style="display:grid;grid-template-columns:52px repeat(7,1fr);">
-              ${gridHtml}
+          <div id="week-scroll" style="overflow-y:auto;max-height:580px;border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);">
+            <div style="display:flex;">
+              <div style="width:52px;flex-shrink:0;background:var(--surface);">${timeLabels}</div>
+              <div style="display:flex;flex:1;min-width:0;">${dayCols}</div>
             </div>
-            ${eventBlocksHtml}
-            ${nowBarHtml}
+            ${nowLineHtml}
           </div>
         </div>
       </div>`;
 
-    // fix pointer-events so blocks are clickable over the grid
-    document.querySelectorAll('.week-event-block').forEach(b => b.style.pointerEvents = 'auto');
-
-    // scroll to current time / 8am
+    // Inject current-time line with correct pixel offset after layout
     setTimeout(()=>{
+      const marker = document.getElementById('week-now-marker');
+      if (marker) {
+        const dayIdx = parseInt(marker.dataset.day);
+        const top    = parseInt(marker.dataset.top);
+        const scroll = document.getElementById('week-scroll');
+        const bodyDiv = scroll.querySelector('div > div:nth-child(2)'); // the flex day cols wrapper
+        if (!bodyDiv) return;
+        const dayCols = bodyDiv.children;
+        if (!dayCols[dayIdx]) return;
+        const rect  = dayCols[dayIdx].getBoundingClientRect();
+        const sRect = scroll.getBoundingClientRect();
+        const line  = document.createElement('div');
+        line.style.cssText = `position:absolute;top:${top}px;left:0;right:0;height:2px;background:var(--accent2);z-index:15;pointer-events:none;`;
+        line.innerHTML = `<div style="width:8px;height:8px;border-radius:50%;background:var(--accent2);position:absolute;left:-4px;top:-3px;"></div>`;
+        dayCols[dayIdx].appendChild(line);
+      }
+      // Scroll to current time
       const sc = document.getElementById('week-scroll');
-      if (!sc) return;
-      const now = new Date();
-      sc.scrollTop = Math.max(0, Math.round((now.getHours()*60+now.getMinutes())/60*WEEK_HOUR_H) - 100);
-    }, 50);
+      if (sc) {
+        const now2 = new Date();
+        sc.scrollTop = Math.max(0, Math.round((now2.getHours()*60+now2.getMinutes())/60*WEEK_HOUR_H) - 120);
+      }
+    }, 30);
   }
 
   window.switchToDayView = function(ds) {
