@@ -246,7 +246,9 @@ body.no-animations .btn { transition:none !important; }
 .range-input-field { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:6px 10px; color:var(--text); font-family:var(--font); font-size:.82rem; outline:none; transition:border-color .2s; }
 .range-input-field:focus { border-color:var(--accent); }
 .range-summary { font-size:.77rem; color:var(--accent); font-weight:600; margin-left:auto; white-space:nowrap; }
-.sch-dot { font-size:.6rem; margin-left:2px; vertical-align:middle; }
+.cal-cell.sch-ferien { box-shadow: inset 0 -3px 0 0 var(--accent3); }
+.week-col.sch-ferien { box-shadow: inset 0 -3px 0 0 var(--accent3); }
+.week-header-cell.sch-ferien { box-shadow: inset 0 -3px 0 0 var(--accent3); }
 .table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow-x:auto; }
 table { width:100%; border-collapse:collapse; }
 thead { background:var(--surface2); }
@@ -1117,7 +1119,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     const isToday = ds === today;
     const holName = holidays && holidays[ds];
     const schHol = schoolHolidaysForDate(ds);
-    const schStyle = schHol ? 'background:rgba(90,200,130,0.07);' : '';
     // holiday pill (non-draggable, non-clickable edit)
     const holPill = holName
       ? `<div class="cal-event-pill cal-holiday-pill" title="${holName}" onclick="event.stopPropagation()">${holName}</div>`
@@ -1148,11 +1149,11 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     const moreCount = dayEvs.length - maxUserPills + (holName ? 0 : 0);
     const more = dayEvs.length > maxUserPills ? `<div style="font-size:.64rem;color:var(--text3)">+${dayEvs.length - maxUserPills} weitere</div>` : '';
     const hasHol = holName ? ' has-holiday' : '';
-    const schTitle = schHol ? ` title="${schHol.name}"` : '';
-    return `<div class="cal-cell${otherMonth ? ' other-month' : ''}${isToday ? ' today' : ''}${dayEvs.length ? ' has-events' : ''}${hasHol}" style="${schStyle}"
-      data-date="${ds}" onclick="calCellClick(event,'${ds}')"${schTitle}
+    const hasSchHol = schHol ? ' sch-ferien' : '';
+    return `<div class="cal-cell${otherMonth ? ' other-month' : ''}${isToday ? ' today' : ''}${dayEvs.length ? ' has-events' : ''}${hasHol}${hasSchHol}"
+      data-date="${ds}" onclick="calCellClick(event,'${ds}')"
       ondragover="onCellDragOver(event)" ondragleave="onCellDragLeave(event)" ondrop="onCellDrop(event,'${ds}')">
-      <div class="day-num">${dayNum}${schHol ? '<span class="sch-dot" title="'+schHol.name+'">🏖</span>' : ''}</div>${holPill}${pills}${more}
+      <div class="day-num">${dayNum}</div>${holPill}${pills}${more}
     </div>`;
   }
 
@@ -1234,7 +1235,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       : '';
     const dSchHol = schoolHolidaysForDate(ds);
     const schHolHtml = dSchHol
-      ? `<div class="cal-event-pill" style="position:static;margin-bottom:4px;background:rgba(61,168,106,0.25);color:#3da86a;border:1px solid rgba(61,168,106,0.4)">🏖 ${dSchHol.name}</div>`
+      ? `<div class="cal-event-pill cal-holiday-pill" style="position:static;margin-bottom:4px;background:rgba(var(--accent3-rgb,67,232,216),0.2);color:var(--accent3);border:1px solid var(--accent3)">🏖 ${dSchHol.name}</div>`
       : '';
     const alldayHtml = (untimedEvs.length || holName || dSchHol) ? `<div class="day-allday-area">
       <span class="day-allday-label">Ganztägig</span>
@@ -1371,11 +1372,11 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       const wHolidays = holidaysVisible() ? getHolidays(wd.getFullYear()) : {};
       const wHolName = wHolidays[ds];
       const wSchHol  = schoolHolidaysForDate(ds);
-      headerCols += `<div class="week-header-cell${isToday?' wh-today':''}" style="flex:1;min-width:0;${wSchHol ? 'background:rgba(90,200,130,0.07);' : ''}">
+      headerCols += `<div class="week-header-cell${isToday?' wh-today':''} ${wSchHol ? 'sch-ferien' : ''}" style="flex:1;min-width:0">
         <div class="wh-name">${dayNames[i]}</div>
         <div class="wh-num" onclick="switchToDayView('${ds}')">${wd.getDate()}</div>
         ${wHolName ? `<div class="week-holiday-badge" title="${wHolName}">🎌 ${wHolName}</div>` : ''}
-        ${wSchHol  ? `<div class="week-holiday-badge" style="color:#3da86a">🏖 ${wSchHol.name}</div>` : ''}
+        ${wSchHol  ? `<div class="week-holiday-badge" style="color:var(--accent3)">🏖 ${wSchHol.name}</div>` : ''}
       </div>`;
     });
 
