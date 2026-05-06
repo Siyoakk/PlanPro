@@ -232,9 +232,21 @@ body.no-animations .btn { transition:none !important; }
 .detail-note-box { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; font-size:.88rem; color:var(--text2); min-height:60px; white-space:pre-wrap; word-break:break-word; line-height:1.5; }
 
 /* BOOKINGS */
-.filter-bar { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+.filter-bar { display:flex; gap:8px; flex-wrap:wrap; }
 .filter-chip { padding:6px 14px; border-radius:99px; border:1px solid var(--border); background:var(--surface); color:var(--text2); font-size:.82rem; font-weight:500; cursor:pointer; transition:background .15s,color .15s; }
 .filter-chip.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+.bookings-toolbar { display:flex; flex-direction:column; gap:14px; margin-bottom:20px; }
+.date-range-bar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); }
+.range-label { font-size:.8rem; font-weight:600; color:var(--text2); white-space:nowrap; }
+.range-quick-btns { display:flex; gap:5px; flex-wrap:wrap; }
+.range-btn { padding:5px 11px; border-radius:99px; border:1px solid var(--border); background:var(--surface2); color:var(--text2); font-size:.78rem; font-weight:500; cursor:pointer; transition:background .15s,color .15s; }
+.range-btn:hover { background:var(--border); color:var(--text); }
+.range-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+.range-custom-inputs { display:flex; align-items:center; gap:8px; }
+.range-input-field { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:6px 10px; color:var(--text); font-family:var(--font); font-size:.82rem; outline:none; transition:border-color .2s; }
+.range-input-field:focus { border-color:var(--accent); }
+.range-summary { font-size:.77rem; color:var(--accent); font-weight:600; margin-left:auto; white-space:nowrap; }
+.sch-dot { font-size:.6rem; margin-left:2px; vertical-align:middle; }
 .table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow-x:auto; }
 table { width:100%; border-collapse:collapse; }
 thead { background:var(--surface2); }
@@ -455,12 +467,32 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     </div>
 
     <div class="page" id="page-bookings">
-      <div class="filter-bar">
-        <div class="filter-chip active" onclick="setFilter('all',this)">Alle</div>
-        <div class="filter-chip" onclick="setFilter('Arbeit',this)">Arbeit</div>
-        <div class="filter-chip" onclick="setFilter('Privat',this)">Privat</div>
-        <div class="filter-chip" onclick="setFilter('Meeting',this)">Meeting</div>
-        <div class="filter-chip" onclick="setFilter('Sonstiges',this)">Sonstiges</div>
+      <div class="bookings-toolbar">
+        <div class="filter-bar">
+          <div class="filter-chip active" onclick="setFilter('all',this)">Alle</div>
+          <div class="filter-chip" onclick="setFilter('Arbeit',this)">Arbeit</div>
+          <div class="filter-chip" onclick="setFilter('Privat',this)">Privat</div>
+          <div class="filter-chip" onclick="setFilter('Meeting',this)">Meeting</div>
+          <div class="filter-chip" onclick="setFilter('Sonstiges',this)">Sonstiges</div>
+        </div>
+        <div class="date-range-bar">
+          <span class="range-label">📅 Zeitraum:</span>
+          <div class="range-quick-btns">
+            <button class="range-btn active" onclick="setRangeQuick('all',this)">Alle</button>
+            <button class="range-btn" onclick="setRangeQuick('today',this)">Heute</button>
+            <button class="range-btn" onclick="setRangeQuick('week',this)">Diese Woche</button>
+            <button class="range-btn" onclick="setRangeQuick('month',this)">Dieser Monat</button>
+            <button class="range-btn" onclick="setRangeQuick('quarter',this)">Quartal</button>
+            <button class="range-btn" onclick="setRangeQuick('year',this)">Jahr</button>
+            <button class="range-btn" onclick="setRangeQuick('custom',this)">Benutzerdefiniert</button>
+          </div>
+          <div class="range-custom-inputs" id="range-custom-inputs" style="display:none">
+            <input type="date" id="range-from" onchange="applyCustomRange()">
+            <span style="color:var(--text3);font-size:.85rem">–</span>
+            <input type="date" id="range-to" onchange="applyCustomRange()">
+          </div>
+          <div id="range-summary" class="range-summary"></div>
+        </div>
       </div>
       <div class="table-wrap">
         <table>
@@ -523,6 +555,29 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
           <div class="toggle-row"><span class="toggle-label">Animationen</span><div class="toggle" id="toggle-animations" onclick="toggleSetting('animations', this)"></div></div>
           <div class="toggle-row"><span class="toggle-label">Kalender: Wochennummern</span><div class="toggle" id="toggle-weeknumbers" onclick="toggleSetting('week_numbers', this)"></div></div>
           <div class="toggle-row"><span class="toggle-label">Kalender: Feiertage anzeigen</span><div class="toggle" id="toggle-holidays" onclick="toggleSetting('show_holidays', this)"></div></div>
+          <div class="toggle-row"><span class="toggle-label">Kalender: Schulferien anzeigen</span><div class="toggle" id="toggle-schoolholidays" onclick="toggleSchoolHolidays(this)"></div></div>
+          <div id="school-state-picker" style="display:none;margin-top:12px;padding:12px 0 4px;">
+            <label style="font-size:.78rem;font-weight:600;color:var(--text2);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:8px">Bundesland</label>
+            <select id="school-state-select" class="range-input-field" onchange="saveSchoolState(this.value)" style="width:100%">
+              <option value="BW">Baden-Württemberg</option>
+              <option value="BY">Bayern</option>
+              <option value="BE">Berlin</option>
+              <option value="BB">Brandenburg</option>
+              <option value="HB">Bremen</option>
+              <option value="HH">Hamburg</option>
+              <option value="HE">Hessen</option>
+              <option value="MV">Mecklenburg-Vorpommern</option>
+              <option value="NI">Niedersachsen</option>
+              <option value="NW">Nordrhein-Westfalen</option>
+              <option value="RP">Rheinland-Pfalz</option>
+              <option value="SL">Saarland</option>
+              <option value="SN">Sachsen</option>
+              <option value="ST">Sachsen-Anhalt</option>
+              <option value="SH">Schleswig-Holstein</option>
+              <option value="TH">Thüringen</option>
+            </select>
+            <p style="font-size:.73rem;color:var(--text3);margin-top:8px">Schulferien werden im Kalender als Zeitraum-Markierung angezeigt.</p>
+          </div>
         </div>
 
         <!-- Konto & Sicherheit -->
@@ -592,6 +647,9 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
   let currentUser = null;
   let calDate = new Date();
   let bookingFilter = 'all';
+  let bookingRangeMode = 'all';   // 'all'|'today'|'week'|'month'|'quarter'|'year'|'custom'
+  let bookingRangeFrom = '';
+  let bookingRangeTo = '';
   let editingEventId = null;
   let currentPage = 'dashboard';
   let events = [];
@@ -830,6 +888,12 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     if (toggleAnim)     ui.animations !== false ? toggleAnim.classList.add('on') : toggleAnim.classList.remove('on');
     if (toggleWeek)     ui.week_numbers ? toggleWeek.classList.add('on') : toggleWeek.classList.remove('on');
     if (toggleHolidays) ui.show_holidays ? toggleHolidays.classList.add('on') : toggleHolidays.classList.remove('on');
+    const toggleSchool  = document.getElementById('toggle-schoolholidays');
+    if (toggleSchool)   ui.show_schoolholidays ? toggleSchool.classList.add('on') : toggleSchool.classList.remove('on');
+    const picker = document.getElementById('school-state-picker');
+    if (picker) picker.style.display = ui.show_schoolholidays ? 'block' : 'none';
+    const stateSelect = document.getElementById('school-state-select');
+    if (stateSelect && ui.school_state) stateSelect.value = ui.school_state;
     // Re-render Kalender wenn aktiv
     if (currentPage === 'calendar') renderCalendar();
   }
@@ -1052,6 +1116,8 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
   function cellHtml(dayNum, ds, dayEvs, colMap, otherMonth, today, holidays) {
     const isToday = ds === today;
     const holName = holidays && holidays[ds];
+    const schHol = schoolHolidaysForDate(ds);
+    const schStyle = schHol ? 'background:rgba(90,200,130,0.07);' : '';
     // holiday pill (non-draggable, non-clickable edit)
     const holPill = holName
       ? `<div class="cal-event-pill cal-holiday-pill" title="${holName}" onclick="event.stopPropagation()">${holName}</div>`
@@ -1082,10 +1148,11 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     const moreCount = dayEvs.length - maxUserPills + (holName ? 0 : 0);
     const more = dayEvs.length > maxUserPills ? `<div style="font-size:.64rem;color:var(--text3)">+${dayEvs.length - maxUserPills} weitere</div>` : '';
     const hasHol = holName ? ' has-holiday' : '';
-    return `<div class="cal-cell${otherMonth ? ' other-month' : ''}${isToday ? ' today' : ''}${dayEvs.length ? ' has-events' : ''}${hasHol}"
-      data-date="${ds}" onclick="calCellClick(event,'${ds}')"
+    const schTitle = schHol ? ` title="${schHol.name}"` : '';
+    return `<div class="cal-cell${otherMonth ? ' other-month' : ''}${isToday ? ' today' : ''}${dayEvs.length ? ' has-events' : ''}${hasHol}" style="${schStyle}"
+      data-date="${ds}" onclick="calCellClick(event,'${ds}')"${schTitle}
       ondragover="onCellDragOver(event)" ondragleave="onCellDragLeave(event)" ondrop="onCellDrop(event,'${ds}')">
-      <div class="day-num">${dayNum}</div>${holPill}${pills}${more}
+      <div class="day-num">${dayNum}${schHol ? '<span class="sch-dot" title="'+schHol.name+'">🏖</span>' : ''}</div>${holPill}${pills}${more}
     </div>`;
   }
 
@@ -1165,9 +1232,13 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     const holHtml = holName
       ? `<div class="cal-event-pill cal-holiday-pill" style="position:static;margin-bottom:4px">${holName}</div>`
       : '';
-    const alldayHtml = (untimedEvs.length || holName) ? `<div class="day-allday-area">
+    const dSchHol = schoolHolidaysForDate(ds);
+    const schHolHtml = dSchHol
+      ? `<div class="cal-event-pill" style="position:static;margin-bottom:4px;background:rgba(61,168,106,0.25);color:#3da86a;border:1px solid rgba(61,168,106,0.4)">🏖 ${dSchHol.name}</div>`
+      : '';
+    const alldayHtml = (untimedEvs.length || holName || dSchHol) ? `<div class="day-allday-area">
       <span class="day-allday-label">Ganztägig</span>
-      ${holHtml}
+      ${holHtml}${schHolHtml}
       ${untimedEvs.map(e=>`<div class="cal-event-pill"
         style="position:static;background:${colMap[e.color||0]}"
         onclick="viewEvent('${e.id}')">${esc(e.title)}</div>`).join('')}
@@ -1299,10 +1370,12 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       const isToday = ds === today;
       const wHolidays = holidaysVisible() ? getHolidays(wd.getFullYear()) : {};
       const wHolName = wHolidays[ds];
-      headerCols += `<div class="week-header-cell${isToday?' wh-today':''}" style="flex:1;min-width:0;">
+      const wSchHol  = schoolHolidaysForDate(ds);
+      headerCols += `<div class="week-header-cell${isToday?' wh-today':''}" style="flex:1;min-width:0;${wSchHol ? 'background:rgba(90,200,130,0.07);' : ''}">
         <div class="wh-name">${dayNames[i]}</div>
         <div class="wh-num" onclick="switchToDayView('${ds}')">${wd.getDate()}</div>
         ${wHolName ? `<div class="week-holiday-badge" title="${wHolName}">🎌 ${wHolName}</div>` : ''}
+        ${wSchHol  ? `<div class="week-holiday-badge" style="color:#3da86a">🏖 ${wSchHol.name}</div>` : ''}
       </div>`;
     });
 
@@ -1550,6 +1623,114 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
   };
 
   // ---------- BUCHUNGEN ----------
+  // ── Schulferien 2024-2026 (Auswahl bundesweit wichtiger Ferien) ────────────
+  const SCHOOL_HOLIDAYS = {
+    BW:[['2024-07-25','2024-09-07'],['2024-10-28','2024-10-30'],['2024-12-23','2025-01-04'],['2025-04-14','2025-04-25'],['2025-06-10','2025-06-20'],['2025-07-31','2025-09-13'],['2025-10-27','2025-10-30'],['2025-12-22','2026-01-05']],
+    BY:[['2024-07-29','2024-09-09'],['2024-10-28','2024-11-01'],['2024-12-21','2025-01-03'],['2025-02-17','2025-02-21'],['2025-04-11','2025-04-25'],['2025-06-10','2025-06-20'],['2025-07-31','2025-09-15'],['2025-11-03','2025-11-07'],['2025-12-24','2026-01-05']],
+    BE:[['2024-07-18','2024-08-30'],['2024-10-04','2024-10-19'],['2024-12-23','2025-01-03'],['2025-01-27','2025-01-27'],['2025-03-24','2025-04-11'],['2025-05-30','2025-05-30'],['2025-07-10','2025-08-22'],['2025-10-06','2025-10-18'],['2025-12-22','2026-01-02']],
+    BB:[['2024-07-18','2024-08-30'],['2024-10-04','2024-10-18'],['2024-12-23','2025-01-03'],['2025-02-03','2025-02-07'],['2025-03-24','2025-04-11'],['2025-05-30','2025-05-30'],['2025-07-10','2025-08-22'],['2025-10-06','2025-10-18'],['2025-12-22','2026-01-02']],
+    HB:[['2024-07-15','2024-08-28'],['2024-10-04','2024-10-18'],['2024-12-23','2025-01-03'],['2025-01-27','2025-01-27'],['2025-03-03','2025-03-14'],['2025-05-02','2025-05-02'],['2025-07-07','2025-08-19'],['2025-10-06','2025-10-17'],['2025-12-22','2026-01-05']],
+    HH:[['2024-07-18','2024-08-28'],['2024-10-04','2024-10-18'],['2024-12-20','2025-01-03'],['2025-01-27','2025-01-27'],['2025-03-10','2025-03-21'],['2025-05-02','2025-05-02'],['2025-07-10','2025-08-20'],['2025-10-06','2025-10-17'],['2025-12-19','2026-01-02']],
+    HE:[['2024-07-15','2024-08-23'],['2024-10-14','2024-10-19'],['2024-12-23','2025-01-11'],['2025-03-10','2025-03-14'],['2025-04-14','2025-04-26'],['2025-06-10','2025-06-10'],['2025-07-07','2025-08-15'],['2025-10-06','2025-10-17'],['2025-12-22','2026-01-10']],
+    MV:[['2024-07-22','2024-08-31'],['2024-09-30','2024-10-11'],['2024-12-23','2025-01-03'],['2025-02-10','2025-02-21'],['2025-04-14','2025-04-25'],['2025-06-02','2025-06-06'],['2025-07-28','2025-09-06'],['2025-10-06','2025-10-17'],['2025-12-22','2026-01-03']],
+    NI:[['2024-07-15','2024-08-28'],['2024-10-04','2024-10-18'],['2024-12-23','2025-01-03'],['2025-01-30','2025-01-31'],['2025-03-03','2025-03-14'],['2025-04-28','2025-05-02'],['2025-07-07','2025-08-19'],['2025-10-06','2025-10-17'],['2025-12-22','2026-01-05']],
+    NW:[['2024-07-08','2024-08-20'],['2024-10-14','2024-10-26'],['2024-12-23','2025-01-06'],['2025-03-03','2025-03-07'],['2025-04-14','2025-04-26'],['2025-05-30','2025-05-30'],['2025-06-30','2025-08-12'],['2025-10-06','2025-10-18'],['2025-12-22','2026-01-05']],
+    RP:[['2024-07-15','2024-08-23'],['2024-10-14','2024-10-25'],['2024-12-23','2025-01-07'],['2025-02-24','2025-02-28'],['2025-04-14','2025-04-25'],['2025-05-30','2025-05-30'],['2025-07-07','2025-08-15'],['2025-10-13','2025-10-24'],['2025-12-22','2026-01-07']],
+    SL:[['2024-07-15','2024-08-23'],['2024-10-21','2024-11-01'],['2024-12-23','2025-01-03'],['2025-02-17','2025-02-21'],['2025-04-14','2025-04-25'],['2025-05-30','2025-05-30'],['2025-07-14','2025-08-22'],['2025-10-20','2025-10-31'],['2025-12-22','2026-01-05']],
+    SN:[['2024-07-18','2024-08-30'],['2024-10-07','2024-10-19'],['2024-12-23','2025-01-03'],['2025-02-17','2025-03-01'],['2025-04-18','2025-04-25'],['2025-05-30','2025-05-30'],['2025-07-21','2025-09-01'],['2025-10-06','2025-10-17'],['2025-12-22','2026-01-02']],
+    ST:[['2024-07-22','2024-08-31'],['2024-10-07','2024-10-12'],['2024-10-31','2024-10-31'],['2024-12-23','2025-01-03'],['2025-02-17','2025-02-21'],['2025-04-11','2025-04-25'],['2025-05-30','2025-05-30'],['2025-07-21','2025-09-01'],['2025-10-17','2025-10-24'],['2025-12-22','2026-01-05']],
+    SH:[['2024-07-15','2024-08-24'],['2024-10-04','2024-10-18'],['2024-12-19','2025-01-03'],['2025-01-27','2025-01-27'],['2025-03-17','2025-03-28'],['2025-05-02','2025-05-02'],['2025-07-07','2025-08-15'],['2025-10-06','2025-10-17'],['2025-12-19','2026-01-05']],
+    TH:[['2024-07-15','2024-08-24'],['2024-09-28','2024-10-12'],['2024-12-23','2025-01-04'],['2025-02-10','2025-02-15'],['2025-04-11','2025-04-25'],['2025-06-09','2025-06-10'],['2025-07-14','2025-08-23'],['2025-10-06','2025-10-17'],['2025-12-22','2026-01-03']],
+  };
+  const SCHOOL_HOLIDAY_NAMES = {
+    BW:['Sommerferien','Herbstferien','Weihnachtsferien','Osterferien','Pfingstferien','Sommerferien','Herbstferien','Weihnachtsferien'],
+    BY:['Sommerferien','Herbstferien','Weihnachtsferien','Faschingsferien','Osterferien','Pfingstferien','Sommerferien','Herbstferien','Weihnachtsferien'],
+  };
+  function getSchoolHolidaysForState(state) {
+    return (SCHOOL_HOLIDAYS[state] || []).map((r,i) => ({
+      from: r[0], to: r[1],
+      name: (SCHOOL_HOLIDAY_NAMES[state]||[])[i] || 'Schulferien'
+    }));
+  }
+  function schoolHolidaysForDate(ds) {
+    const s = JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}');
+    if (!s.ui || !s.ui.show_schoolholidays) return null;
+    const state = s.ui.school_state || 'NW';
+    const ranges = getSchoolHolidaysForState(state);
+    return ranges.find(r => ds >= r.from && ds <= r.to) || null;
+  }
+  window.toggleSchoolHolidays = function(toggleEl) {
+    let settings = JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}');
+    if (!settings.ui) settings.ui = {};
+    settings.ui.show_schoolholidays = !settings.ui.show_schoolholidays;
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    const picker = document.getElementById('school-state-picker');
+    if (picker) picker.style.display = settings.ui.show_schoolholidays ? 'block' : 'none';
+    if (settings.ui.show_schoolholidays) toggleEl.classList.add('on');
+    else toggleEl.classList.remove('on');
+    if (currentPage === 'calendar') renderCalendar();
+    toast('Schulferien ' + (settings.ui.show_schoolholidays ? 'aktiviert' : 'deaktiviert'));
+  };
+  window.saveSchoolState = function(state) {
+    let settings = JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}');
+    if (!settings.ui) settings.ui = {};
+    settings.ui.school_state = state;
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    if (currentPage === 'calendar') renderCalendar();
+    toast('Bundesland gespeichert');
+  };
+
+  // ── Zeitraum-Filter (Alle Buchungen) ─────────────────────────────────────
+  window.setRangeQuick = function(mode, el) {
+    bookingRangeMode = mode;
+    document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    const customInputs = document.getElementById('range-custom-inputs');
+    if (mode === 'custom') {
+      customInputs.style.display = 'flex';
+    } else {
+      customInputs.style.display = 'none';
+      const [from, to] = getRangeForMode(mode);
+      bookingRangeFrom = from;
+      bookingRangeTo = to;
+    }
+    renderBookings();
+  };
+  window.applyCustomRange = function() {
+    bookingRangeFrom = document.getElementById('range-from').value;
+    bookingRangeTo   = document.getElementById('range-to').value;
+    renderBookings();
+  };
+  function getRangeForMode(mode) {
+    const now = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    const today = fmt(now);
+    if (mode === 'all') return ['',''];
+    if (mode === 'today') return [today, today];
+    if (mode === 'week') {
+      const day = now.getDay() || 7;
+      const mon = new Date(now); mon.setDate(now.getDate()-day+1);
+      const sun = new Date(mon); sun.setDate(mon.getDate()+6);
+      return [fmt(mon), fmt(sun)];
+    }
+    if (mode === 'month') {
+      const from = `${now.getFullYear()}-${pad(now.getMonth()+1)}-01`;
+      const to   = fmt(new Date(now.getFullYear(), now.getMonth()+1, 0));
+      return [from, to];
+    }
+    if (mode === 'quarter') {
+      const q = Math.floor(now.getMonth()/3);
+      const from = new Date(now.getFullYear(), q*3, 1);
+      const to   = new Date(now.getFullYear(), q*3+3, 0);
+      return [fmt(from), fmt(to)];
+    }
+    if (mode === 'year') {
+      return [`${now.getFullYear()}-01-01`, `${now.getFullYear()}-12-31`];
+    }
+    return ['',''];
+  }
+
   window.setFilter = function(f, el) {
     bookingFilter = f;
     document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
@@ -1559,6 +1740,19 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
   function renderBookings() {
     let filtered = events;
     if (bookingFilter !== 'all') filtered = filtered.filter(e => e.category === bookingFilter);
+    // Zeitraum-Filter
+    if (bookingRangeMode !== 'all') {
+      let from = bookingRangeFrom, to = bookingRangeTo;
+      if (bookingRangeMode !== 'custom') { [from,to] = getRangeForMode(bookingRangeMode); }
+      if (from) filtered = filtered.filter(e => (e.dateEnd || e.date) >= from && e.date <= to);
+      // Summary
+      const el = document.getElementById('range-summary');
+      if (el && from) el.textContent = `${formatDate(from)} – ${formatDate(to)} · ${filtered.length} Termin${filtered.length!==1?'e':''}`;
+      else if (el) el.textContent = '';
+    } else {
+      const el = document.getElementById('range-summary');
+      if (el) el.textContent = '';
+    }
     filtered.sort((a, b) => {
       let valA = a[sortField];
       let valB = b[sortField];
