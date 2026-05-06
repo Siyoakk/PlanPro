@@ -4,6 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>SiyoPlan – Synchronisiert</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-92.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+<meta name="theme-color" content="#6c63ff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SiyoPlan">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -27,7 +37,6 @@
 [data-theme="forest"][data-accent="4"]  { --accent:#00bcd4; --accent2:#ff5722; --accent3:#a0f080; }
 * { box-sizing:border-box; margin:0; padding:0; }
 body { background:var(--bg); color:var(--text); font-family:var(--font); min-height:100vh; transition:background .3s,color .3s; }
-<link rel="manifest" href="/PlanPro/manifest.json">
 
 /* Kompakte Ansicht */
 body.compact .page { padding:16px !important; }
@@ -994,38 +1003,64 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
   // ---------- FEIERTAGE DEUTSCHLAND ----------
   // Berechnet alle deutschen Feiertage für ein Jahr (bundesweit gültige)
   function getEaster(y) {
-    // Gauss'sche Osterformel
+    // Gauss'sche Osterformel – gibt lokales Datum zurück (kein UTC-Problem)
     const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4;
     const f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30;
     const i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7;
     const m=Math.floor((a+11*h+22*l)/451);
     const month=Math.floor((h+l-7*m+114)/31);
     const day=((h+l-7*m+114)%31)+1;
-    return new Date(y,month-1,day);
+    return new Date(y, month-1, day); // lokale Zeit – kein UTC-Offset-Bug
+  }
+  // Lokales Datum als YYYY-MM-DD (verhindert UTC-Verschiebung um -1 Tag)
+  function fmtLocal(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   }
   function getHolidays(y) {
     const easter = getEaster(y);
     const add = (d, days) => { const r=new Date(d); r.setDate(r.getDate()+days); return r; };
-    const fmt = d => d.toISOString().slice(0,10);
+    const fmt = fmtLocal;
     const H = [
-      [fmt(new Date(y,0,1)),  'Neujahr 🎆'],
-      [fmt(new Date(y,0,6)),  'Heilige Drei Könige ✨'],
-      [fmt(add(easter,-2)),   'Karfreitag 🕊️'],
-      [fmt(easter),           'Ostersonntag 🐣'],
-      [fmt(add(easter,1)),    'Ostermontag 🐣'],
-      [fmt(new Date(y,4,1)),  'Tag der Arbeit 🔨'],
-      [fmt(add(easter,39)),   'Christi Himmelfahrt ⛪'],
-      [fmt(add(easter,49)),   'Pfingstsonntag 🕊️'],
-      [fmt(add(easter,50)),   'Pfingstmontag 🕊️'],
-      [fmt(add(easter,60)),   'Fronleichnam 🌹'],
-      [fmt(new Date(y,9,3)),  'Tag der Deutschen Einheit 🇩🇪'],
-      [fmt(new Date(y,10,1)), 'Allerheiligen 🕯️'],
-      [fmt(new Date(y,11,25)),'1. Weihnachtstag 🎄'],
-      [fmt(new Date(y,11,26)),'2. Weihnachtstag 🎄'],
+      [fmt(new Date(y,0,1)),   'Neujahr 🎆'],
+      [fmt(new Date(y,0,6)),   'Heilige Drei Könige ✨'],
+      [fmt(new Date(y,1,14)),  'Valentinstag 💝'],
+      [fmt(add(easter,-48)),   'Rosenmontag 🎭'],
+      [fmt(add(easter,-47)),   'Faschingsdienstag 🎭'],
+      [fmt(add(easter,-46)),   'Aschermittwoch ✝️'],
+      [fmt(add(easter,-7)),    'Palmsonntag 🌿'],
+      [fmt(add(easter,-3)),    'Gründonnerstag 🍞'],
+      [fmt(add(easter,-2)),    'Karfreitag 🕊️'],
+      [fmt(add(easter,-1)),    'Karsamstag ✝️'],
+      [fmt(easter),            'Ostersonntag 🐣'],
+      [fmt(add(easter,1)),     'Ostermontag 🐣'],
+      [fmt(new Date(y,3,30)),  'Walpurgisnacht 🔥'],
+      [fmt(new Date(y,4,1)),   'Tag der Arbeit 🔨'],
+      [fmt(new Date(y,4,8)),   'Tag der Befreiung 🕊️'],
+      [fmt(add(easter,39)),    'Christi Himmelfahrt ⛪'],
+      [fmt(add(easter,49)),    'Pfingstsonntag 🌸'],
+      [fmt(add(easter,50)),    'Pfingstmontag 🌸'],
+      [fmt(add(easter,60)),    'Fronleichnam 🌹'],
+      [fmt(new Date(y,7,15)),  'Mariä Himmelfahrt 🌺'],
+      [fmt(new Date(y,9,3)),   'Tag der Deutschen Einheit 🇩🇪'],
+      [fmt(new Date(y,9,31)),  'Reformationstag ✝️'],
+      [fmt(new Date(y,10,1)),  'Allerheiligen 🕯️'],
+      [fmt(new Date(y,10,2)),  'Allerseelen 🕯️'],
+      // Buß- und Bettag: Mittwoch vor dem 23. November
+      [fmt((()=>{ const d=new Date(y,10,23); d.setDate(d.getDate()-((d.getDay()+4)%7)); return d; })()),
+       'Buß- und Bettag 🙏'],
+      [fmt(new Date(y,10,11)), 'Martinstag 🦢'],
+      // 1. Advent: erster Sonntag im Advent (4. Sonntag vor Weihnachten)
+      [fmt((()=>{ const d=new Date(y,11,25); const dow=d.getDay()||7; d.setDate(d.getDate()-dow-21); return d; })()),
+       '1. Advent 🕯️'],
+      [fmt(new Date(y,11,6)),  'Nikolaus 🎅'],
+      [fmt(new Date(y,11,24)), 'Heiligabend 🎄'],
+      [fmt(new Date(y,11,25)), '1. Weihnachtstag 🎄'],
+      [fmt(new Date(y,11,26)), '2. Weihnachtstag 🎄'],
+      [fmt(new Date(y,11,31)), 'Silvester 🎆'],
     ];
     // Map: date-string → name
     const map = {};
-    H.forEach(([d,n]) => { map[d] = n; });
+    H.forEach(([d,n]) => { if(d) map[d] = n; });
     return map;
   }
   function holidaysVisible() {
@@ -2076,13 +2111,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       toast(`📅 Verschoben auf ${formatDate(targetDate)}`);
     } catch(err){toast('Fehler: '+err.message);}
   };
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/PlanPro/sw.js')
-      .then(reg => console.log('Service Worker registriert:', reg))
-      .catch(err => console.error('SW-Registrierung fehlgeschlagen:', err));
-  });
-}
+
 </script>
 </body>
 </html>
