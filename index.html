@@ -160,6 +160,11 @@ body.no-animations .btn { transition:none !important; }
 .cal-event-pill:hover { opacity:.75; }
 .cal-event-pill.c2 { background:var(--accent2); }
 .cal-event-pill.c3 { background:var(--accent3); color:#1a1a2e; }
+.cal-holiday-pill { background:linear-gradient(90deg,#d4a017,#c07820) !important; color:#fff !important; cursor:default !important; font-size:.63rem; opacity:.93; }
+.cal-holiday-pill:hover { opacity:.93 !important; }
+.cal-cell.has-holiday .day-num { color:#d4a017; font-weight:700; }
+.cal-kw-cell { display:flex; align-items:flex-start; justify-content:center; padding-top:7px; font-size:.61rem; color:var(--text3); font-weight:600; border-right:1px solid var(--border); background:var(--surface2); min-width:28px; }
+.week-holiday-badge { font-size:.57rem; color:#c8900a; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:1px 4px 2px; line-height:1.2; }
 
 /* CALENDAR VIEW SWITCHER */
 .cal-view-switcher { display:flex; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); overflow:hidden; flex-shrink:0; }
@@ -517,6 +522,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
           <div class="toggle-row"><span class="toggle-label">Kompakte Ansicht</span><div class="toggle" id="toggle-compact" onclick="toggleSetting('compact_view', this)"></div></div>
           <div class="toggle-row"><span class="toggle-label">Animationen</span><div class="toggle" id="toggle-animations" onclick="toggleSetting('animations', this)"></div></div>
           <div class="toggle-row"><span class="toggle-label">Kalender: Wochennummern</span><div class="toggle" id="toggle-weeknumbers" onclick="toggleSetting('week_numbers', this)"></div></div>
+          <div class="toggle-row"><span class="toggle-label">Kalender: Feiertage anzeigen</span><div class="toggle" id="toggle-holidays" onclick="toggleSetting('show_holidays', this)"></div></div>
         </div>
 
         <!-- Konto & Sicherheit -->
@@ -806,20 +812,26 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     // Animationen
     if (ui.animations === false) document.body.classList.add('no-animations');
     else document.body.classList.remove('no-animations');
-    // Wochennummern (Platzhalter – aktuell kein Feature)
+    // Wochennummern – body-Klasse setzen, renderCalendar liest sie
+    if (ui.week_numbers) document.body.classList.add('show-weeknumbers');
+    else document.body.classList.remove('show-weeknumbers');
     // Toggle-Stände aktualisieren
     const toggleReminder = document.getElementById('toggle-notify-reminder');
-    const toggleSummary = document.getElementById('toggle-dashboard-summary');
-    const toggleNewUser = document.getElementById('toggle-new-user');
-    const toggleCompact = document.getElementById('toggle-compact');
-    const toggleAnim = document.getElementById('toggle-animations');
-    const toggleWeek = document.getElementById('toggle-weeknumbers');
+    const toggleSummary  = document.getElementById('toggle-dashboard-summary');
+    const toggleNewUser  = document.getElementById('toggle-new-user');
+    const toggleCompact  = document.getElementById('toggle-compact');
+    const toggleAnim     = document.getElementById('toggle-animations');
+    const toggleWeek     = document.getElementById('toggle-weeknumbers');
+    const toggleHolidays = document.getElementById('toggle-holidays');
     if (toggleReminder) ui.notify_reminder ? toggleReminder.classList.add('on') : toggleReminder.classList.remove('on');
-    if (toggleSummary) ui.dashboard_summary ? toggleSummary.classList.add('on') : toggleSummary.classList.remove('on');
-    if (toggleNewUser) ui.new_user_notify ? toggleNewUser.classList.add('on') : toggleNewUser.classList.remove('on');
-    if (toggleCompact) ui.compact_view ? toggleCompact.classList.add('on') : toggleCompact.classList.remove('on');
-    if (toggleAnim) ui.animations !== false ? toggleAnim.classList.add('on') : toggleAnim.classList.remove('on');
-    if (toggleWeek) ui.week_numbers ? toggleWeek.classList.add('on') : toggleWeek.classList.remove('on');
+    if (toggleSummary)  ui.dashboard_summary ? toggleSummary.classList.add('on') : toggleSummary.classList.remove('on');
+    if (toggleNewUser)  ui.new_user_notify ? toggleNewUser.classList.add('on') : toggleNewUser.classList.remove('on');
+    if (toggleCompact)  ui.compact_view ? toggleCompact.classList.add('on') : toggleCompact.classList.remove('on');
+    if (toggleAnim)     ui.animations !== false ? toggleAnim.classList.add('on') : toggleAnim.classList.remove('on');
+    if (toggleWeek)     ui.week_numbers ? toggleWeek.classList.add('on') : toggleWeek.classList.remove('on');
+    if (toggleHolidays) ui.show_holidays ? toggleHolidays.classList.add('on') : toggleHolidays.classList.remove('on');
+    // Re-render Kalender wenn aktiv
+    if (currentPage === 'calendar') renderCalendar();
   }
 
   // ---------- APP ANZEIGEN ----------
@@ -912,6 +924,59 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     }
   }
 
+  // ---------- FEIERTAGE DEUTSCHLAND ----------
+  // Berechnet alle deutschen Feiertage für ein Jahr (bundesweit gültige)
+  function getEaster(y) {
+    // Gauss'sche Osterformel
+    const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4;
+    const f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30;
+    const i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7;
+    const m=Math.floor((a+11*h+22*l)/451);
+    const month=Math.floor((h+l-7*m+114)/31);
+    const day=((h+l-7*m+114)%31)+1;
+    return new Date(y,month-1,day);
+  }
+  function getHolidays(y) {
+    const easter = getEaster(y);
+    const add = (d, days) => { const r=new Date(d); r.setDate(r.getDate()+days); return r; };
+    const fmt = d => d.toISOString().slice(0,10);
+    const H = [
+      [fmt(new Date(y,0,1)),  'Neujahr 🎆'],
+      [fmt(new Date(y,0,6)),  'Heilige Drei Könige ✨'],
+      [fmt(add(easter,-2)),   'Karfreitag 🕊️'],
+      [fmt(easter),           'Ostersonntag 🐣'],
+      [fmt(add(easter,1)),    'Ostermontag 🐣'],
+      [fmt(new Date(y,4,1)),  'Tag der Arbeit 🔨'],
+      [fmt(add(easter,39)),   'Christi Himmelfahrt ⛪'],
+      [fmt(add(easter,49)),   'Pfingstsonntag 🕊️'],
+      [fmt(add(easter,50)),   'Pfingstmontag 🕊️'],
+      [fmt(add(easter,60)),   'Fronleichnam 🌹'],
+      [fmt(new Date(y,9,3)),  'Tag der Deutschen Einheit 🇩🇪'],
+      [fmt(new Date(y,10,1)), 'Allerheiligen 🕯️'],
+      [fmt(new Date(y,11,25)),'1. Weihnachtstag 🎄'],
+      [fmt(new Date(y,11,26)),'2. Weihnachtstag 🎄'],
+    ];
+    // Map: date-string → name
+    const map = {};
+    H.forEach(([d,n]) => { map[d] = n; });
+    return map;
+  }
+  function holidaysVisible() {
+    const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+    return !!(settings.ui && settings.ui.show_holidays);
+  }
+  function weekNumbersVisible() {
+    const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+    return !!(settings.ui && settings.ui.week_numbers);
+  }
+  function getISOWeek(d) {
+    const dt = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const day = dt.getUTCDay() || 7;
+    dt.setUTCDate(dt.getUTCDate() + 4 - day);
+    const yearStart = new Date(Date.UTC(dt.getUTCFullYear(),0,1));
+    return Math.ceil((((dt-yearStart)/86400000)+1)/7);
+  }
+
   // ---------- KALENDER ----------
   let calView = 'month'; // 'day' | 'week' | 'month'
 
@@ -948,24 +1013,51 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     jump.value = `${y}-${String(m+1).padStart(2,'0')}`;
     const today = todayStr();
     const colMap = ['','c2','c3'];
+    const showWkn = weekNumbersVisible();
+    const showHol = holidaysVisible();
+    const holidays = showHol ? getHolidays(y) : {};
     const dayNames = ['Mo','Di','Mi','Do','Fr','Sa','So'];
-    let html = `<div class="cal-grid">` + dayNames.map(d => `<div class="cal-day-name">${d}</div>`).join('');
+    const gridCols = showWkn ? 'auto repeat(7,1fr)' : 'repeat(7,1fr)';
+    let html = `<div class="cal-grid" style="grid-template-columns:${gridCols}">`;
+    if (showWkn) html += `<div class="cal-day-name" style="color:var(--text3);font-size:.62rem">KW</div>`;
+    html += dayNames.map(d => `<div class="cal-day-name">${d}</div>`).join('');
     const first = new Date(y,m,1), startDay = first.getDay() || 7, totalDays = new Date(y,m+1,0).getDate();
+    let currentRow = -1;
+    // Pre-cells
     for (let i = 1; i < startDay; i++) {
       const d = new Date(y, m, 1 - (startDay - i));
       const ds = d.toISOString().slice(0,10);
-      html += cellHtml(d.getDate(), ds, events.filter(e => eventCoversDate(e, ds)), colMap, true, today);
+      const row = Math.floor((i-1)/7);
+      if (showWkn && row !== currentRow) {
+        currentRow = row;
+        html += `<div class="cal-kw-cell">${getISOWeek(d)}</div>`;
+      }
+      html += cellHtml(d.getDate(), ds, events.filter(e => eventCoversDate(e, ds)), colMap, true, today, holidays);
     }
+    // Main cells
     for (let d = 1; d <= totalDays; d++) {
       const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      html += cellHtml(d, ds, events.filter(e => eventCoversDate(e, ds)), colMap, false, today);
+      const dt = new Date(y,m,d);
+      const cellPos = startDay - 1 + d - 1; // 0-based position in grid
+      const row = Math.floor(cellPos/7);
+      if (showWkn && row !== currentRow) {
+        currentRow = row;
+        html += `<div class="cal-kw-cell">${getISOWeek(dt)}</div>`;
+      }
+      html += cellHtml(d, ds, events.filter(e => eventCoversDate(e, ds)), colMap, false, today, holidays);
     }
     html += '</div>';
     document.getElementById('cal-view-container').innerHTML = html;
   }
-  function cellHtml(dayNum, ds, dayEvs, colMap, otherMonth, today) {
+  function cellHtml(dayNum, ds, dayEvs, colMap, otherMonth, today, holidays) {
     const isToday = ds === today;
-    const pills = dayEvs.slice(0,2).map(e => {
+    const holName = holidays && holidays[ds];
+    // holiday pill (non-draggable, non-clickable edit)
+    const holPill = holName
+      ? `<div class="cal-event-pill cal-holiday-pill" title="${holName}" onclick="event.stopPropagation()">${holName}</div>`
+      : '';
+    const maxUserPills = holName ? 1 : 2;
+    const pills = dayEvs.slice(0, maxUserPills).map(e => {
       const isMulti = e.dateEnd && e.dateEnd !== e.date;
       const isFirst = e.date === ds;
       const isLast  = !e.dateEnd || e.dateEnd === ds;
@@ -987,11 +1079,13 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
         ontouchend="onPillTouchEnd(event)"
       >${label}</div>`;
     }).join('');
-    const more = dayEvs.length > 2 ? `<div style="font-size:.64rem;color:var(--text3)">+${dayEvs.length-2} weitere</div>` : '';
-    return `<div class="cal-cell${otherMonth ? ' other-month' : ''}${isToday ? ' today' : ''}${dayEvs.length ? ' has-events' : ''}"
+    const moreCount = dayEvs.length - maxUserPills + (holName ? 0 : 0);
+    const more = dayEvs.length > maxUserPills ? `<div style="font-size:.64rem;color:var(--text3)">+${dayEvs.length - maxUserPills} weitere</div>` : '';
+    const hasHol = holName ? ' has-holiday' : '';
+    return `<div class="cal-cell${otherMonth ? ' other-month' : ''}${isToday ? ' today' : ''}${dayEvs.length ? ' has-events' : ''}${hasHol}"
       data-date="${ds}" onclick="calCellClick(event,'${ds}')"
       ondragover="onCellDragOver(event)" ondragleave="onCellDragLeave(event)" ondrop="onCellDrop(event,'${ds}')">
-      <div class="day-num">${dayNum}</div>${pills}${more}
+      <div class="day-num">${dayNum}</div>${holPill}${pills}${more}
     </div>`;
   }
 
@@ -1066,8 +1160,14 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     }
 
     // ── all-day pills ──
-    const alldayHtml = untimedEvs.length ? `<div class="day-allday-area">
+    const holidays = holidaysVisible() ? getHolidays(calDate.getFullYear()) : {};
+    const holName = holidays[ds];
+    const holHtml = holName
+      ? `<div class="cal-event-pill cal-holiday-pill" style="position:static;margin-bottom:4px">${holName}</div>`
+      : '';
+    const alldayHtml = (untimedEvs.length || holName) ? `<div class="day-allday-area">
       <span class="day-allday-label">Ganztägig</span>
+      ${holHtml}
       ${untimedEvs.map(e=>`<div class="cal-event-pill"
         style="position:static;background:${colMap[e.color||0]}"
         onclick="viewEvent('${e.id}')">${esc(e.title)}</div>`).join('')}
@@ -1197,9 +1297,12 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     weekDays.forEach((wd,i) => {
       const ds = wd.toISOString().slice(0,10);
       const isToday = ds === today;
+      const wHolidays = holidaysVisible() ? getHolidays(wd.getFullYear()) : {};
+      const wHolName = wHolidays[ds];
       headerCols += `<div class="week-header-cell${isToday?' wh-today':''}" style="flex:1;min-width:0;">
         <div class="wh-name">${dayNames[i]}</div>
         <div class="wh-num" onclick="switchToDayView('${ds}')">${wd.getDate()}</div>
+        ${wHolName ? `<div class="week-holiday-badge" title="${wHolName}">🎌 ${wHolName}</div>` : ''}
       </div>`;
     });
 
