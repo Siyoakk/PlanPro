@@ -429,7 +429,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     <div class="nav-item active" onclick="navigate('dashboard')"><span class="icon">📊</span> Dashboard</div>
     <div class="nav-section">Kalender</div>
     <div class="nav-item" onclick="navigate('calendar')"><span class="icon">📅</span> Kalender</div>
-    <div class="nav-item" onclick="navigate('bookings')"><span class="icon">📋</span> Alle Buchungen</div>
+    <div class="nav-item" onclick="navigate('bookings')"><span class="icon">📋</span> Alle Termine</div>
     <div class="nav-item" onclick="openNewEventModal()"><span class="icon">➕</span> Neuer Termin</div>
     <div class="nav-section">Verwaltung</div>
     <div class="nav-item" id="nav-users" onclick="navigate('users')"><span class="icon">👥</span> Benutzer</div>
@@ -458,8 +458,8 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       <div class="dash-grid">
         <div class="stat-card" style="cursor:pointer" onclick="navigateDashStat('today')" title="Zur Tagesansicht">
           <div class="stat-label">Heute</div><div class="stat-val" id="stat-today">0</div><div class="stat-sub">Termine heute →</div></div>
-        <div class="stat-card c2" style="cursor:pointer" onclick="navigateDashStat('total')" title="Alle Buchungen">
-          <div class="stat-label">Gesamt</div><div class="stat-val" id="stat-total">0</div><div class="stat-sub">Alle Buchungen →</div></div>
+        <div class="stat-card c2" style="cursor:pointer" onclick="navigateDashStat('total')" title="Alle Termine">
+          <div class="stat-label">Gesamt</div><div class="stat-val" id="stat-total">0</div><div class="stat-sub">Alle Termine →</div></div>
         <div class="stat-card c3" style="cursor:pointer" onclick="navigateDashStat('week')" title="Zur Wochenansicht">
           <div class="stat-label">Diese Woche</div><div class="stat-val" id="stat-week">0</div><div class="stat-sub">Termine diese Woche →</div></div>
       </div>
@@ -966,7 +966,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
   };
 
   // ---------- NAVIGATION ----------
-  const pageTitles = { dashboard:'Dashboard', calendar:'Kalender',  newtermin:'+ Neuer Termin', bookings:'Alle Buchungen', users:'Benutzerverwaltung', settings:'Einstellungen' };
+  const pageTitles = { dashboard:'Dashboard', calendar:'Kalender',  newtermin:'+ Neuer Termin', bookings:'Alle Termine', users:'Benutzerverwaltung', settings:'Einstellungen' };
   const navOrder = ['dashboard','calendar','bookings','newtermin','users','settings'];
   window.navigate = function(page) {
     currentPage = page;
@@ -1815,7 +1815,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     const catBadge = { 'Arbeit':'badge-blue', 'Meeting':'badge-green', 'Privat':'badge-pink', 'Sonstiges':'badge-blue' };
     const tbody = document.getElementById('bookings-tbody');
     if (!filtered.length) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3)">Keine Buchungen</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3)">Keine Termine</td></tr>';
     } else {
       tbody.innerHTML = filtered.map(e => `
         <tr class="${e.completed ? 'completed' : ''}">
