@@ -173,8 +173,13 @@ body.no-animations .btn { transition:none !important; }
 .cal-holiday-pill { background:linear-gradient(90deg,#d4a017,#c07820) !important; color:#fff !important; cursor:default !important; font-size:.63rem; opacity:.93; }
 .cal-holiday-pill:hover { opacity:.93 !important; }
 .cal-cell.has-holiday .day-num { color:#d4a017; font-weight:700; }
+.cal-cell.sch-ferien { background: color-mix(in srgb, var(--accent3) 8%, var(--surface)); }
+.cal-cell.sch-ferien .day-num { color: var(--accent3); }
+.cal-school-pill { background: rgba(67,232,216,0.18) !important; color: var(--accent3) !important; border: 1px solid var(--accent3) !important; cursor:default !important; font-size:.63rem; opacity:.95; }
+.cal-school-pill:hover { opacity:.95 !important; }
 .cal-kw-cell { display:flex; align-items:flex-start; justify-content:center; padding-top:7px; font-size:.61rem; color:var(--text3); font-weight:600; border-right:1px solid var(--border); background:var(--surface2); min-width:28px; }
 .week-holiday-badge { font-size:.57rem; color:#c8900a; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:1px 4px 2px; line-height:1.2; }
+.week-school-badge { font-size:.57rem; color:var(--accent3); font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:1px 4px 2px; line-height:1.2; }
 
 /* CALENDAR VIEW SWITCHER */
 .cal-view-switcher { display:flex; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); overflow:hidden; flex-shrink:0; }
@@ -1021,42 +1026,42 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     const add = (d, days) => { const r=new Date(d); r.setDate(r.getDate()+days); return r; };
     const fmt = fmtLocal;
     const H = [
-      [fmt(new Date(y,0,1)),   'Neujahr 🎆'],
-      [fmt(new Date(y,0,6)),   'Heilige Drei Könige ✨'],
-      [fmt(new Date(y,1,14)),  'Valentinstag 💝'],
-      [fmt(add(easter,-48)),   'Rosenmontag 🎭'],
-      [fmt(add(easter,-47)),   'Faschingsdienstag 🎭'],
-      [fmt(add(easter,-46)),   'Aschermittwoch ✝️'],
-      [fmt(add(easter,-7)),    'Palmsonntag 🌿'],
-      [fmt(add(easter,-3)),    'Gründonnerstag 🍞'],
-      [fmt(add(easter,-2)),    'Karfreitag 🕊️'],
-      [fmt(add(easter,-1)),    'Karsamstag ✝️'],
-      [fmt(easter),            'Ostersonntag 🐣'],
-      [fmt(add(easter,1)),     'Ostermontag 🐣'],
-      [fmt(new Date(y,3,30)),  'Walpurgisnacht 🔥'],
-      [fmt(new Date(y,4,1)),   'Tag der Arbeit 🔨'],
-      [fmt(new Date(y,4,8)),   'Tag der Befreiung 🕊️'],
-      [fmt(add(easter,39)),    'Christi Himmelfahrt ⛪'],
-      [fmt(add(easter,49)),    'Pfingstsonntag 🌸'],
-      [fmt(add(easter,50)),    'Pfingstmontag 🌸'],
-      [fmt(add(easter,60)),    'Fronleichnam 🌹'],
-      [fmt(new Date(y,7,15)),  'Mariä Himmelfahrt 🌺'],
-      [fmt(new Date(y,9,3)),   'Tag der Deutschen Einheit 🇩🇪'],
-      [fmt(new Date(y,9,31)),  'Reformationstag ✝️'],
-      [fmt(new Date(y,10,1)),  'Allerheiligen 🕯️'],
-      [fmt(new Date(y,10,2)),  'Allerseelen 🕯️'],
+      [fmt(new Date(y,0,1)),   'Neujahr'],
+      [fmt(new Date(y,0,6)),   'Heilige Drei Könige'],
+      [fmt(new Date(y,1,14)),  'Valentinstag'],
+      [fmt(add(easter,-48)),   'Rosenmontag'],
+      [fmt(add(easter,-47)),   'Faschingsdienstag'],
+      [fmt(add(easter,-46)),   'Aschermittwoch'],
+      [fmt(add(easter,-7)),    'Palmsonntag'],
+      [fmt(add(easter,-3)),    'Gründonnerstag'],
+      [fmt(add(easter,-2)),    'Karfreitag'],
+      [fmt(add(easter,-1)),    'Karsamstag'],
+      [fmt(easter),            'Ostersonntag'],
+      [fmt(add(easter,1)),     'Ostermontag'],
+      [fmt(new Date(y,3,30)),  'Walpurgisnacht'],
+      [fmt(new Date(y,4,1)),   'Tag der Arbeit'],
+      [fmt(new Date(y,4,8)),   'Tag der Befreiung'],
+      [fmt(add(easter,39)),    'Christi Himmelfahrt'],
+      [fmt(add(easter,49)),    'Pfingstsonntag'],
+      [fmt(add(easter,50)),    'Pfingstmontag'],
+      [fmt(add(easter,60)),    'Fronleichnam'],
+      [fmt(new Date(y,7,15)),  'Mariä Himmelfahrt'],
+      [fmt(new Date(y,9,3)),   'Tag der Deutschen Einheit'],
+      [fmt(new Date(y,9,31)),  'Reformationstag'],
+      [fmt(new Date(y,10,1)),  'Allerheiligen'],
+      [fmt(new Date(y,10,2)),  'Allerseelen'],
       // Buß- und Bettag: Mittwoch vor dem 23. November
       [fmt((()=>{ const d=new Date(y,10,23); d.setDate(d.getDate()-((d.getDay()+4)%7)); return d; })()),
-       'Buß- und Bettag 🙏'],
-      [fmt(new Date(y,10,11)), 'Martinstag 🦢'],
+       'Buß- und Bettag'],
+      [fmt(new Date(y,10,11)), 'Martinstag'],
       // 1. Advent: erster Sonntag im Advent (4. Sonntag vor Weihnachten)
       [fmt((()=>{ const d=new Date(y,11,25); const dow=d.getDay()||7; d.setDate(d.getDate()-dow-21); return d; })()),
-       '1. Advent 🕯️'],
-      [fmt(new Date(y,11,6)),  'Nikolaus 🎅'],
-      [fmt(new Date(y,11,24)), 'Heiligabend 🎄'],
-      [fmt(new Date(y,11,25)), '1. Weihnachtstag 🎄'],
-      [fmt(new Date(y,11,26)), '2. Weihnachtstag 🎄'],
-      [fmt(new Date(y,11,31)), 'Silvester 🎆'],
+       '1. Advent'],
+      [fmt(new Date(y,11,6)),  'Nikolaus'],
+      [fmt(new Date(y,11,24)), 'Heiligabend'],
+      [fmt(new Date(y,11,25)), '1. Weihnachtstag'],
+      [fmt(new Date(y,11,26)), '2. Weihnachtstag'],
+      [fmt(new Date(y,11,31)), 'Silvester'],
     ];
     // Map: date-string → name
     const map = {};
@@ -1159,7 +1164,10 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     const holPill = holName
       ? `<div class="cal-event-pill cal-holiday-pill" title="${holName}" onclick="event.stopPropagation()">${holName}</div>`
       : '';
-    const maxUserPills = holName ? 1 : 2;
+    const schPill = schHol
+      ? `<div class="cal-event-pill cal-school-pill" title="${schHol.name}" onclick="event.stopPropagation()">${schHol.name}</div>`
+      : '';
+    const maxUserPills = (holName ? 1 : 0) + (schHol ? 1 : 0) > 0 ? (holName && schHol ? 0 : 1) : 2;
     const pills = dayEvs.slice(0, maxUserPills).map(e => {
       const isMulti = e.dateEnd && e.dateEnd !== e.date;
       const isFirst = e.date === ds;
@@ -1189,7 +1197,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     return `<div class="cal-cell${otherMonth ? ' other-month' : ''}${isToday ? ' today' : ''}${dayEvs.length ? ' has-events' : ''}${hasHol}${hasSchHol}"
       data-date="${ds}" onclick="calCellClick(event,'${ds}')"
       ondragover="onCellDragOver(event)" ondragleave="onCellDragLeave(event)" ondrop="onCellDrop(event,'${ds}')">
-      <div class="day-num">${dayNum}</div>${holPill}${pills}${more}
+      <div class="day-num">${dayNum}</div>${holPill}${schPill}${pills}${more}
     </div>`;
   }
 
@@ -1271,7 +1279,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       : '';
     const dSchHol = schoolHolidaysForDate(ds);
     const schHolHtml = dSchHol
-      ? `<div class="cal-event-pill cal-holiday-pill" style="position:static;margin-bottom:4px;background:rgba(var(--accent3-rgb,67,232,216),0.2);color:var(--accent3);border:1px solid var(--accent3)">🏖 ${dSchHol.name}</div>`
+      ? `<div class="cal-event-pill cal-school-pill" style="position:static;margin-bottom:4px">${dSchHol.name}</div>`
       : '';
     const alldayHtml = (untimedEvs.length || holName || dSchHol) ? `<div class="day-allday-area">
       <span class="day-allday-label">Ganztägig</span>
@@ -1411,8 +1419,8 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       headerCols += `<div class="week-header-cell${isToday?' wh-today':''} ${wSchHol ? 'sch-ferien' : ''}" style="flex:1;min-width:0">
         <div class="wh-name">${dayNames[i]}</div>
         <div class="wh-num" onclick="switchToDayView('${ds}')">${wd.getDate()}</div>
-        ${wHolName ? `<div class="week-holiday-badge" title="${wHolName}">🎌 ${wHolName}</div>` : ''}
-        ${wSchHol  ? `<div class="week-holiday-badge" style="color:var(--accent3)">🏖 ${wSchHol.name}</div>` : ''}
+        ${wHolName ? `<div class="week-holiday-badge" title="${wHolName}">${wHolName}</div>` : ''}
+        ${wSchHol  ? `<div class="week-school-badge">${wSchHol.name}</div>` : ''}
       </div>`;
     });
 
@@ -1427,6 +1435,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     let dayCols = '';
     weekDays.forEach((wd, dayIdx) => {
       const ds = wd.toISOString().slice(0,10);
+      const wSchHolCol = schoolHolidaysForDate(ds);
       // Hour slots (for click-to-create and visual grid lines)
       let slots = '';
       for (let h=0; h<24; h++) {
@@ -1435,7 +1444,8 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       }
       // Event overlay (position:relative wrapper, events are absolute inside)
       const blocks = buildDayBlocks(ds);
-      dayCols += `<div style="flex:1;min-width:0;position:relative;">
+      const ferienBg = wSchHolCol ? 'background:rgba(67,232,216,0.05);' : '';
+      dayCols += `<div style="flex:1;min-width:0;position:relative;${ferienBg}">
         ${slots}
         <div style="position:absolute;inset:0;pointer-events:none;">${blocks}</div>
       </div>`;
