@@ -1599,6 +1599,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     if (!ev) return;
     const colMap = ['','c2','c3'];
     const catBadge = { 'Arbeit':'badge-blue', 'Meeting':'badge-green', 'Privat':'badge-pink', 'Training':'badge-orange', 'Sonstiges':'badge-blue' };
+    document.getElementById('modal-box').innerHTML = `
       <div class="event-detail-header">
         <div class="event-detail-dot ${colMap[ev.color||0]}"></div>
         <h2 style="margin:0;font-size:1.4rem">${esc(ev.title)}</h2>
