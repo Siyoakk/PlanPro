@@ -277,6 +277,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
 .badge-blue { background:rgba(108,99,255,.18); color:var(--accent); }
 .badge-pink { background:rgba(255,101,132,.18); color:var(--accent2); }
 .badge-green { background:rgba(67,232,216,.18); color:var(--accent3); }
+.badge-orange { background:rgba(255,147,30,.18); color:#f7931e; }
 
 /* MODAL */
 #modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; z-index:500; padding:16px; backdrop-filter:blur(4px); }
@@ -362,68 +363,24 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
 ::-webkit-scrollbar { width:6px; height:6px; }
 ::-webkit-scrollbar-track { background:transparent; }
 ::-webkit-scrollbar-thumb { background:var(--border); border-radius:99px; }
-
 /* SEARCH BAR */
 .search-bar-wrap { display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:8px 14px; transition:border-color .2s; }
 .search-bar-wrap:focus-within { border-color:var(--accent); }
-.search-bar-wrap .search-icon { color:var(--text3); font-size:1rem; flex-shrink:0; }
 .search-bar-input { flex:1; background:none; border:none; outline:none; color:var(--text); font-family:var(--font); font-size:.9rem; }
 .search-bar-input::placeholder { color:var(--text3); }
 .search-clear { background:none; border:none; color:var(--text3); cursor:pointer; font-size:1rem; padding:0 2px; display:none; }
 .search-clear.visible { display:inline; }
 .search-count { font-size:.75rem; color:var(--text3); white-space:nowrap; }
-
-/* RECURRING EVENT BADGE */
-.recur-badge { display:inline-flex; align-items:center; gap:4px; font-size:.68rem; background:rgba(67,232,216,.15); color:var(--accent3); border:1px solid rgba(67,232,216,.3); border-radius:99px; padding:2px 8px; margin-left:6px; }
-
-/* AI ASSISTANT */
-.ai-fab { position:fixed; bottom:28px; left:calc(var(--sidebar-w) + 20px); z-index:200; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; border:none; border-radius:99px; padding:12px 20px; font-family:var(--font); font-size:.9rem; font-weight:600; cursor:pointer; box-shadow:0 4px 20px rgba(108,99,255,.4); display:flex; align-items:center; gap:8px; transition:transform .2s,box-shadow .2s; }
-.ai-fab:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(108,99,255,.5); }
-@media (max-width:768px) { .ai-fab { left:16px; bottom:16px; padding:10px 16px; font-size:.82rem; } }
-
-#ai-panel { position:fixed; bottom:90px; left:calc(var(--sidebar-w) + 20px); z-index:200; width:min(440px, calc(100vw - var(--sidebar-w) - 40px)); background:var(--surface); border:1px solid var(--border); border-radius:20px; box-shadow:var(--shadow); display:none; flex-direction:column; max-height:520px; overflow:hidden; animation:slideUp .22s ease; }
-#ai-panel.open { display:flex; }
-@media (max-width:768px) { #ai-panel { left:10px; right:10px; width:auto; bottom:70px; } }
-
-.ai-panel-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--border); background:linear-gradient(135deg,rgba(108,99,255,.12),rgba(255,101,132,.08)); }
-.ai-panel-title { font-weight:700; font-size:.95rem; display:flex; align-items:center; gap:8px; }
-.ai-panel-close { background:none; border:none; color:var(--text3); cursor:pointer; font-size:1.2rem; padding:2px; }
-.ai-panel-close:hover { color:var(--text); }
-
-.ai-messages { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; }
-.ai-msg { max-width:92%; padding:10px 14px; border-radius:12px; font-size:.85rem; line-height:1.5; }
-.ai-msg.user { background:var(--accent); color:#fff; align-self:flex-end; border-radius:12px 12px 4px 12px; }
-.ai-msg.assistant { background:var(--surface2); color:var(--text); align-self:flex-start; border-radius:12px 12px 12px 4px; border:1px solid var(--border); }
-.ai-msg.thinking { color:var(--text3); font-style:italic; }
-
-.ai-input-row { display:flex; gap:8px; padding:12px 16px; border-top:1px solid var(--border); }
-.ai-input { flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:9px 12px; color:var(--text); font-family:var(--font); font-size:.88rem; outline:none; resize:none; max-height:90px; transition:border-color .2s; }
-.ai-input:focus { border-color:var(--accent); }
-.ai-send-btn { background:var(--accent); border:none; border-radius:var(--radius-sm); padding:9px 14px; color:#fff; cursor:pointer; font-size:1rem; transition:opacity .15s; flex-shrink:0; }
-.ai-send-btn:hover { opacity:.85; }
-.ai-send-btn:disabled { opacity:.4; cursor:not-allowed; }
-
-.ai-quick-btns { padding:0 16px 10px; display:flex; gap:6px; flex-wrap:wrap; }
-.ai-quick-btn { background:var(--surface2); border:1px solid var(--border); border-radius:99px; padding:5px 12px; font-size:.75rem; color:var(--text2); cursor:pointer; transition:background .15s,color .15s; font-family:var(--font); }
-.ai-quick-btn:hover { background:var(--accent); border-color:var(--accent); color:#fff; }
-
-.ai-event-preview { background:var(--surface2); border:1px solid var(--accent); border-radius:var(--radius-sm); padding:12px 14px; margin-top:8px; }
-.ai-event-preview h4 { font-size:.8rem; font-weight:700; color:var(--accent); margin-bottom:8px; text-transform:uppercase; letter-spacing:.06em; }
-.ai-event-item { display:flex; align-items:center; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border); font-size:.82rem; }
-.ai-event-item:last-child { border-bottom:none; }
-.ai-event-item-info { flex:1; }
-.ai-event-item-title { font-weight:600; }
-.ai-event-item-meta { font-size:.74rem; color:var(--text2); margin-top:2px; }
-.ai-confirm-row { display:flex; gap:8px; margin-top:12px; justify-content:flex-end; }
-
-/* RECURRING OPTIONS IN MODAL */
-.recur-options { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; margin-top:4px; display:none; }
+/* WIEDERHOLUNG */
+.recur-options { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; margin-top:8px; display:none; }
 .recur-options.visible { display:block; }
 .recur-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:8px; }
 .recur-row label { font-size:.8rem; color:var(--text2); white-space:nowrap; }
-.recur-row input[type=number] { width:60px; background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:4px 8px; color:var(--text); font-family:var(--font); font-size:.85rem; outline:none; }
+.recur-row input[type=number] { width:64px; background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:5px 8px; color:var(--text); font-family:var(--font); font-size:.85rem; outline:none; }
 .recur-row input[type=number]:focus { border-color:var(--accent); }
-.recur-tag { display:inline-flex; align-items:center; gap:4px; background:rgba(108,99,255,.15); color:var(--accent); border-radius:99px; padding:3px 10px; font-size:.74rem; font-weight:600; }
+.recur-row input[type=date] { background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:5px 8px; color:var(--text); font-family:var(--font); font-size:.85rem; outline:none; }
+.recur-row input[type=date]:focus { border-color:var(--accent); }
+.recur-badge { display:inline-flex;align-items:center;gap:3px;font-size:.62rem;background:rgba(67,232,216,.14);color:var(--accent3);border:1px solid rgba(67,232,216,.28);border-radius:99px;padding:1px 6px;margin-left:4px;vertical-align:middle; }
 </style>
 </head>
 <body>
@@ -547,9 +504,8 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
 
     <div class="page" id="page-bookings">
       <div class="bookings-toolbar">
-        <!-- SUCHLEISTE -->
         <div class="search-bar-wrap">
-          <span class="search-icon">🔍</span>
+          <span style="color:var(--text3)">🔍</span>
           <input class="search-bar-input" id="bookings-search" type="text" placeholder="Termine suchen … (Titel, Notiz, Kategorie)" oninput="onBookingSearch(this)">
           <button class="search-clear" id="search-clear-btn" onclick="clearBookingSearch()">✕</button>
           <span class="search-count" id="search-count"></span>
@@ -560,6 +516,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
           <div class="filter-chip" onclick="setFilter('Privat',this)">Privat</div>
           <div class="filter-chip" onclick="setFilter('Meeting',this)">Meeting</div>
           <div class="filter-chip" onclick="setFilter('Sonstiges',this)">Sonstiges</div>
+          <div class="filter-chip" onclick="setFilter('Training',this)">💪 Training</div>
         </div>
         <div class="date-range-bar">
           <span class="range-label">📅 Zeitraum:</span>
@@ -702,28 +659,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
 
 <div id="modal-overlay"><div class="modal" id="modal-box"></div></div>
 <div id="toast"></div>
-
-<!-- KI-ASSISTENT FAB & PANEL -->
-<button class="ai-fab" onclick="toggleAiPanel()" id="ai-fab-btn">Baustelle KI-Assistent</button>
-
-<div id="ai-panel">
-  <div class="ai-panel-header">
-    <div class="ai-panel-title">Baustelle KI-Terminassistent <span style="font-size:.72rem;font-weight:400;color:var(--text3);margin-left:4px">powered by Claude</span></div>
-    <button class="ai-panel-close" onclick="toggleAiPanel()">✕</button>
-  </div>
-  <div class="ai-messages" id="ai-messages">
-    <div class="ai-msg assistant">Hallo! Ich bin dein KI-Terminassistent. Ich kann dir helfen, Termine zu planen.<br><br>Zum Beispiel:<br>• <em>„Erstelle einen Trainingsplan für diese Woche"</em><br>• <em>„Plane täglich um 8 Uhr eine Morgenroutine"</em><br>• <em>„Füge nächsten Montag ein Meeting ein"</em></div>
-  </div>
-  <div class="ai-quick-btns">
-    <button class="ai-quick-btn" onclick="aiQuick('Erstelle einen Trainingsplan für diese Woche, an Tagen wo ich um 19 Uhr nichts habe')">💪 Trainingsplan diese Woche</button>
-    <button class="ai-quick-btn" onclick="aiQuick('Plane 3 Fokus-Blöcke à 2h diese Woche')">🎯 Fokus-Blöcke</button>
-    <button class="ai-quick-btn" onclick="aiQuick('Was sind meine nächsten Termine?')">📅 Nächste Termine</button>
-  </div>
-  <div class="ai-input-row">
-    <textarea class="ai-input" id="ai-input" rows="1" placeholder="Schreibe deinen Wunsch …" onkeydown="aiInputKeydown(event)"></textarea>
-    <button class="ai-send-btn" id="ai-send-btn" onclick="sendAiMessage()">➤</button>
-  </div>
-</div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
@@ -1230,7 +1165,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
         currentRow = row;
         html += `<div class="cal-kw-cell">${getISOWeek(d)}</div>`;
       }
-      html += cellHtml(d.getDate(), ds, events.filter(e => eventCoversDate(e, ds)), colMap, true, today, holidays);
+      html += cellHtml(d.getDate(), ds, getEventsForDate(ds), colMap, true, today, holidays);
     }
     // Main cells
     for (let d = 1; d <= totalDays; d++) {
@@ -1242,7 +1177,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
         currentRow = row;
         html += `<div class="cal-kw-cell">${getISOWeek(dt)}</div>`;
       }
-      html += cellHtml(d, ds, events.filter(e => eventCoversDate(e, ds)), colMap, false, today, holidays);
+      html += cellHtml(d, ds, getEventsForDate(ds), colMap, false, today, holidays);
     }
     html += '</div>';
     document.getElementById('cal-view-container').innerHTML = html;
@@ -1270,6 +1205,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
         else               extraStyle = 'border-radius:0;margin-left:-2px;margin-right:-2px;';
       }
       const label = isFirst || !isMulti ? esc(e.title) : (isLast ? '↳ '+esc(e.title) : '···');
+      const recurMark = (e.recur && e.recur !== 'none') ? ' 🔁' : '';
       return `<div class="cal-event-pill ${colMap[e.color||0]} ${e.completed ? 'completed' : ''}"
         draggable="true" data-event-id="${e.id}" data-event-title="${esc(e.title)}"
         style="${extraStyle}"
@@ -1279,7 +1215,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
         ontouchstart="onPillTouchStart(event,'${e.id}','${esc(e.title)}')"
         ontouchmove="onPillTouchMove(event)"
         ontouchend="onPillTouchEnd(event)"
-      >${label}</div>`;
+      >${label}${recurMark}</div>`;
     }).join('');
     const moreCount = dayEvs.length - maxUserPills + (holName ? 0 : 0);
     const more = dayEvs.length > maxUserPills ? `<div style="font-size:.64rem;color:var(--text3)">+${dayEvs.length - maxUserPills} weitere</div>` : '';
@@ -1306,7 +1242,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     jump.type = 'date'; jump.value = ds;
 
     const colMap = ['var(--accent)','var(--accent2)','var(--accent3)'];
-    const dayEvs = events.filter(e => eventCoversDate(e, ds))
+    const dayEvs = getEventsForDate(ds)
                          .sort((a,b)=>(a.time||'00:00').localeCompare(b.time||'00:00'));
     const timedEvs   = dayEvs.filter(e => e.time);
     const untimedEvs = dayEvs.filter(e => !e.time);
@@ -1448,7 +1384,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     // ── Build event blocks per day (column-relative positioning) ──────────────
     // Returns HTML for all events in one day column, positioned within that column.
     function buildDayBlocks(ds) {
-      const dayEvs = events.filter(e => eventCoversDate(e, ds) && e.time)
+      const dayEvs = getEventsForDate(ds).filter(e => e.time)
                            .sort((a,b) => a.time.localeCompare(b.time));
       if (!dayEvs.length) return '';
 
@@ -1662,8 +1598,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     const ev = events.find(e => e.id === id);
     if (!ev) return;
     const colMap = ['','c2','c3'];
-    const catBadge = { 'Arbeit':'badge-blue', 'Meeting':'badge-green', 'Privat':'badge-pink', 'Sonstiges':'badge-blue' };
-    document.getElementById('modal-box').innerHTML = `
+    const catBadge = { 'Arbeit':'badge-blue', 'Meeting':'badge-green', 'Privat':'badge-pink', 'Training':'badge-orange', 'Sonstiges':'badge-blue' };
       <div class="event-detail-header">
         <div class="event-detail-dot ${colMap[ev.color||0]}"></div>
         <h2 style="margin:0;font-size:1.4rem">${esc(ev.title)}</h2>
@@ -1695,7 +1630,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     showEventModal(ev, true);
   };
   function showEventModal(ev, isEdit) {
-    const catOpts = ['Arbeit','Privat','Meeting','Sonstiges'].map(c => `<option${c===ev.category ? ' selected' : ''}>${c}</option>`).join('');
+    const catOpts = ['Arbeit','Privat','Meeting','Training','Sonstiges'].map(c => `<option${c===ev.category ? ' selected' : ''}>${c}</option>`).join('');
     const colorOpts = [['Türkis','0'],['Orange','1'],['Grün','2']].map(([l,v]) => `<option value="${v}"${v==ev.color ? ' selected' : ''}>${l}</option>`).join('');
     document.getElementById('modal-box').innerHTML = `
       <h2>${isEdit ? 'Termin bearbeiten' : 'Neuer Termin'}</h2>
@@ -1714,25 +1649,24 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       </div>
       <div class="form-group"><label>Notiz</label><textarea id="ev-note" rows="3">${esc(ev.note || '')}</textarea></div>
       <div class="form-group"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="ev-completed" ${ev.completed ? 'checked' : ''}> <span>Erledigt</span></label></div>
-      <!-- WIEDERHOLUNG -->
       <div class="form-group">
         <label>🔁 Wiederholung</label>
-        <select id="ev-recur" onchange="onRecurChange()">
-          <option value="none" ${(!ev.recur || ev.recur==='none') ? 'selected' : ''}>Keine</option>
-          <option value="daily"   ${ev.recur==='daily'   ? 'selected' : ''}>Täglich</option>
-          <option value="weekly"  ${ev.recur==='weekly'  ? 'selected' : ''}>Wöchentlich</option>
-          <option value="monthly" ${ev.recur==='monthly' ? 'selected' : ''}>Monatlich</option>
-          <option value="yearly"  ${ev.recur==='yearly'  ? 'selected' : ''}>Jährlich</option>
+        <select id="ev-recur" onchange="onRecurChange(this)">
+          <option value="none"    ${(!ev.recur||ev.recur==='none')  ?'selected':''}>Keine</option>
+          <option value="daily"   ${ev.recur==='daily'   ?'selected':''}>Täglich</option>
+          <option value="weekly"  ${ev.recur==='weekly'  ?'selected':''}>Wöchentlich</option>
+          <option value="monthly" ${ev.recur==='monthly' ?'selected':''}>Monatlich</option>
+          <option value="yearly"  ${ev.recur==='yearly'  ?'selected':''}>Jährlich</option>
         </select>
-        <div class="recur-options ${(ev.recur && ev.recur!=='none') ? 'visible' : ''}" id="recur-options">
+        <div id="recur-options" class="recur-options${(ev.recur&&ev.recur!=='none')?' visible':''}">
           <div class="recur-row">
-            <label>Wiederholen alle</label>
-            <input type="number" id="ev-recur-interval" min="1" max="99" value="${ev.recurInterval || 1}">
-            <span id="recur-unit-label" style="font-size:.8rem;color:var(--text2)">${ev.recur==='daily'?'Tage':ev.recur==='weekly'?'Wochen':ev.recur==='monthly'?'Monate':'Jahre'}</span>
+            <label>Alle</label>
+            <input type="number" id="ev-recur-interval" min="1" max="99" value="${ev.recurInterval||1}">
+            <span id="recur-unit-lbl" style="font-size:.82rem;color:var(--text2)">${{daily:'Tag(e)',weekly:'Woche(n)',monthly:'Monat(e)',yearly:'Jahr(e)'}[ev.recur]||'Tag(e)'}</span>
           </div>
           <div class="recur-row" style="margin-top:10px">
             <label>Endet am</label>
-            <input type="date" id="ev-recur-end" class="range-input-field" value="${ev.recurEnd || ''}" style="width:auto">
+            <input type="date" id="ev-recur-end" value="${ev.recurEnd||''}">
           </div>
         </div>
       </div>
@@ -1764,7 +1698,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       color: parseInt(document.getElementById('ev-color').value) || 0,
       completed: document.getElementById('ev-completed').checked,
       recur: document.getElementById('ev-recur')?.value || 'none',
-      recurInterval: parseInt(document.getElementById('ev-recur-interval')?.value || 1),
+      recurInterval: parseInt(document.getElementById('ev-recur-interval')?.value || '1') || 1,
       recurEnd: document.getElementById('ev-recur-end')?.value || '',
       userId: currentUser.uid
     };
@@ -1785,68 +1719,86 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     toast("🗑️ Gelöscht");
   };
 
-  // ── Recurring toggle in modal ─────────────────────────────────────────────
-  window.onRecurChange = function() {
-    const val = document.getElementById('ev-recur').value;
+  // ── Wiederholungs-Toggle im Modal ──────────────────────────────────────────
+  window.onRecurChange = function(sel) {
+    const val = sel.value;
     const opts = document.getElementById('recur-options');
-    const lbl  = document.getElementById('recur-unit-label');
+    const lbl  = document.getElementById('recur-unit-lbl');
     if (!opts) return;
     opts.className = 'recur-options' + (val !== 'none' ? ' visible' : '');
-    const map = {daily:'Tage', weekly:'Wochen', monthly:'Monate', yearly:'Jahre'};
+    const map = { daily:'Tag(e)', weekly:'Woche(n)', monthly:'Monat(e)', yearly:'Jahr(e)' };
     if (lbl) lbl.textContent = map[val] || '';
   };
 
-  // ── Generate recurring instances for display ─────────────────────────────
-  function expandRecurring(ev, fromDate, toDate) {
-    if (!ev.recur || ev.recur === 'none') return [ev];
+  // ── Wiederholungs-Expansion ────────────────────────────────────────────────
+  // Gibt alle virtuellen Instanzen eines Events für einen Datumsbereich zurück.
+  // Jede Instanz hat das echte ev.id, sodass Klick → viewEvent / editEvent funktioniert.
+  function expandRecurring(ev, fromDs, toDs) {
+    if (!ev.recur || ev.recur === 'none') return [];
+    const interval = Math.max(1, ev.recurInterval || 1);
     const instances = [];
-    const interval = ev.recurInterval || 1;
+    // Startpunkt: das Ursprungsdatum des Events
     let cur = new Date(ev.date + 'T00:00:00');
-    const end = toDate ? new Date(toDate + 'T00:00:00') : new Date(cur.getFullYear()+2, 11, 31);
-    const recurEnd = ev.recurEnd ? new Date(ev.recurEnd + 'T00:00:00') : end;
-    const maxEnd = recurEnd < end ? recurEnd : end;
-    const from = fromDate ? new Date(fromDate + 'T00:00:00') : new Date(ev.date + 'T00:00:00');
+    const rangeEnd  = new Date(toDs   + 'T00:00:00');
+    const rangeFrom = new Date(fromDs + 'T00:00:00');
+    // Endgrenze der Wiederholung
+    const recurEndDate = ev.recurEnd
+      ? new Date(ev.recurEnd + 'T00:00:00')
+      : new Date(cur.getFullYear() + 3, 11, 31); // max 3 Jahre
+    const hardEnd = recurEndDate < rangeEnd ? recurEndDate : rangeEnd;
+
     let safety = 0;
-    while (cur <= maxEnd && safety++ < 500) {
-      const ds = `${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`;
-      if (cur >= from) instances.push({...ev, date: ds, dateEnd: ds, _recurring: true, _baseId: ev.id});
-      if (ev.recur === 'daily')   cur.setDate(cur.getDate() + interval);
-      else if (ev.recur === 'weekly')  cur.setDate(cur.getDate() + interval * 7);
-      else if (ev.recur === 'monthly') cur.setMonth(cur.getMonth() + interval);
-      else if (ev.recur === 'yearly')  cur.setFullYear(cur.getFullYear() + interval);
+    while (cur <= hardEnd && safety++ < 1000) {
+      if (cur >= rangeFrom) {
+        const ds = toLocalDateStr(cur);
+        // Ursprüngliches Datum überspringen — das echte Event wird separat angezeigt
+        if (ds !== ev.date) {
+          instances.push({ ...ev, date: ds, dateEnd: ds, _virtual: true });
+        }
+      }
+      // Nächstes Datum berechnen
+      const next = new Date(cur);
+      if      (ev.recur === 'daily')   next.setDate(next.getDate() + interval);
+      else if (ev.recur === 'weekly')  next.setDate(next.getDate() + interval * 7);
+      else if (ev.recur === 'monthly') next.setMonth(next.getMonth() + interval);
+      else if (ev.recur === 'yearly')  next.setFullYear(next.getFullYear() + interval);
+      cur = next;
     }
     return instances;
   }
 
-  // Expand all recurring events for a date range used by calendar / bookings
-  function getExpandedEvents(fromDate, toDate) {
+  function toLocalDateStr(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  // Liefert alle Events (inkl. Wiederholungen) für ein einzelnes Datum
+  function getEventsForDate(ds) {
     const result = [];
     for (const ev of events) {
-      if (ev.recur && ev.recur !== 'none') {
-        result.push(...expandRecurring(ev, fromDate, toDate));
-      } else {
-        result.push(ev);
+      // Reguläres Event / Mehrtages-Event
+      if (eventCoversDate(ev, ds)) result.push(ev);
+      // Virtuelle Wiederholungen
+      else if (ev.recur && ev.recur !== 'none') {
+        const inst = expandRecurring(ev, ds, ds);
+        if (inst.length) result.push(inst[0]);
       }
     }
     return result;
   }
 
-  // ── SEARCH ───────────────────────────────────────────────────────────────
-  let bookingSearch = '';
-  window.onBookingSearch = function(input) {
-    bookingSearch = input.value.toLowerCase();
-    const clearBtn = document.getElementById('search-clear-btn');
-    if (clearBtn) clearBtn.className = 'search-clear' + (bookingSearch ? ' visible' : '');
-    renderBookings();
-  };
-  window.clearBookingSearch = function() {
-    const inp = document.getElementById('bookings-search');
-    if (inp) inp.value = '';
-    bookingSearch = '';
-    const clearBtn = document.getElementById('search-clear-btn');
-    if (clearBtn) clearBtn.className = 'search-clear';
-    renderBookings();
-  };
+  // Liefert alle Events (inkl. Wiederholungen) für einen Bereich (Wochenansicht)
+  function getEventsForRange(fromDs, toDs) {
+    const result = [];
+    for (const ev of events) {
+      if (eventCoversDate(ev, fromDs) ||
+          (ev.date >= fromDs && ev.date <= toDs)) {
+        result.push(ev);
+      } else if (ev.recur && ev.recur !== 'none') {
+        result.push(...expandRecurring(ev, fromDs, toDs));
+      }
+    }
+    return result;
+  }
 
   // ---------- BUCHUNGEN ----------
   // ── Schulferien 2024-2026 (Auswahl bundesweit wichtiger Ferien) ────────────
@@ -1964,18 +1916,14 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     renderBookings();
   };
   function renderBookings() {
-    // Expand recurring for current display range (up to 1 year ahead)
-    const today = todayStr();
-    const yearAhead = new Date(); yearAhead.setFullYear(yearAhead.getFullYear()+1);
-    const toStr = `${yearAhead.getFullYear()}-${String(yearAhead.getMonth()+1).padStart(2,'0')}-${String(yearAhead.getDate()).padStart(2,'0')}`;
-    let filtered = getExpandedEvents('2000-01-01', toStr);
-
+    let filtered = events;
     if (bookingFilter !== 'all') filtered = filtered.filter(e => e.category === bookingFilter);
     // Zeitraum-Filter
     if (bookingRangeMode !== 'all') {
       let from = bookingRangeFrom, to = bookingRangeTo;
       if (bookingRangeMode !== 'custom') { [from,to] = getRangeForMode(bookingRangeMode); }
       if (from) filtered = filtered.filter(e => (e.dateEnd || e.date) >= from && e.date <= to);
+      // Summary
       const el = document.getElementById('range-summary');
       if (el && from) el.textContent = `${formatDate(from)} – ${formatDate(to)} · ${filtered.length} Termin${filtered.length!==1?'e':''}`;
       else if (el) el.textContent = '';
@@ -1983,17 +1931,6 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       const el = document.getElementById('range-summary');
       if (el) el.textContent = '';
     }
-    // SUCHE
-    if (bookingSearch) {
-      filtered = filtered.filter(e =>
-        (e.title||'').toLowerCase().includes(bookingSearch) ||
-        (e.note||'').toLowerCase().includes(bookingSearch) ||
-        (e.category||'').toLowerCase().includes(bookingSearch)
-      );
-    }
-    const countEl = document.getElementById('search-count');
-    if (countEl) countEl.textContent = bookingSearch ? `${filtered.length} Ergebnis${filtered.length!==1?'se':''}` : '';
-
     filtered.sort((a, b) => {
       let valA = a[sortField];
       let valB = b[sortField];
@@ -2006,26 +1943,34 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
       return 0;
     });
-    const catBadge = { 'Arbeit':'badge-blue', 'Meeting':'badge-green', 'Privat':'badge-pink', 'Sonstiges':'badge-blue' };
-    const recurIcon = { daily:'Tägl.', weekly:'Wöch.', monthly:'Monatl.', yearly:'Jährl.' };
+    const catBadge = { 'Arbeit':'badge-blue', 'Meeting':'badge-green', 'Privat':'badge-pink', 'Training':'badge-orange', 'Sonstiges':'badge-blue' };
+    // Suche
+    if (bookingSearch) {
+      filtered = filtered.filter(e =>
+        (e.title||'').toLowerCase().includes(bookingSearch) ||
+        (e.note||'').toLowerCase().includes(bookingSearch) ||
+        (e.category||'').toLowerCase().includes(bookingSearch)
+      );
+    }
+    const countEl = document.getElementById('search-count');
+    if (countEl) countEl.textContent = bookingSearch ? `${filtered.length} Ergebnis${filtered.length!==1?'se':''}` : '';
     const tbody = document.getElementById('bookings-tbody');
     if (!filtered.length) {
       tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3)">Keine Termine</td></tr>';
     } else {
       tbody.innerHTML = filtered.map(e => `
         <tr class="${e.completed ? 'completed' : ''}">
-          <td style="cursor:pointer;font-weight:600" onclick="viewEvent('${e._baseId || e.id}')">
-            ${esc(e.title)}
-            ${e._recurring ? `<span class="recur-badge">🔁 ${recurIcon[e.recur]||''}</span>` : (e.recur && e.recur!=='none' ? `<span class="recur-badge">🔁</span>` : '')}
+          <td style="cursor:pointer;font-weight:600" onclick="viewEvent('${e.id}')">
+            ${esc(e.title)}${e.recur && e.recur!=='none' ? '<span class="recur-badge">🔁</span>' : ''}
           </td>
           <td>${formatDate(e.date)}${e.dateEnd && e.dateEnd !== e.date ? ' – ' + formatDate(e.dateEnd) : ''}</td>
           <td>${esc(e.time)}${e.timeEnd ? ' – ' + esc(e.timeEnd) : ''}</td>
           <td><span class="badge ${catBadge[e.category] || 'badge-blue'}">${esc(e.category)}</span></td>
           <td class="hide-mobile">${esc(e.note || '—')}</td>
           <td style="white-space:nowrap">
-            <button class="btn btn-ghost" style="padding:5px 9px;font-size:.76rem" onclick="viewEvent('${e._baseId || e.id}')">👁️</button>
-            <button class="btn btn-ghost" style="padding:5px 9px;font-size:.76rem;margin-left:3px" onclick="editEvent('${e._baseId || e.id}')">✏️</button>
-            <button class="btn btn-danger" style="padding:5px 9px;font-size:.76rem;margin-left:3px" onclick="deleteEvent('${e._baseId || e.id}')">🗑️</button>
+            <button class="btn btn-ghost" style="padding:5px 9px;font-size:.76rem" onclick="viewEvent('${e.id}')">👁️</button>
+            <button class="btn btn-ghost" style="padding:5px 9px;font-size:.76rem;margin-left:3px" onclick="editEvent('${e.id}')">✏️</button>
+            <button class="btn btn-danger" style="padding:5px 9px;font-size:.76rem;margin-left:3px" onclick="deleteEvent('${e.id}')">🗑️</button>
           </td>
         </tr>`).join('');
     }
@@ -2318,6 +2263,23 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       await updateDoc(doc(db,'events',id), updateData);
       toast(`📅 Verschoben auf ${formatDate(targetDate)}`);
     } catch(err){toast('Fehler: '+err.message);}
+  };
+
+  // ── SUCHE (Alle Termine) ──────────────────────────────────────────────────
+  let bookingSearch = '';
+  window.onBookingSearch = function(input) {
+    bookingSearch = input.value.toLowerCase();
+    const clearBtn = document.getElementById('search-clear-btn');
+    if (clearBtn) clearBtn.className = 'search-clear' + (bookingSearch ? ' visible' : '');
+    renderBookings();
+  };
+  window.clearBookingSearch = function() {
+    const inp = document.getElementById('bookings-search');
+    if (inp) inp.value = '';
+    bookingSearch = '';
+    const clearBtn = document.getElementById('search-clear-btn');
+    if (clearBtn) clearBtn.className = 'search-clear';
+    renderBookings();
   };
 
 </script>
