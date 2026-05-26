@@ -144,6 +144,10 @@ body.no-animations .btn { transition:none !important; }
 .event-card.completed .event-title, tr.completed td:first-child {
   text-decoration: line-through;
 }
+.day-event-block.completed .deb-title,
+.week-event-block.completed .web-title {
+  text-decoration: line-through;
+}
 
 /* CALENDAR */
 .cal-header { display:flex; align-items:center; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
@@ -1288,11 +1292,11 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       const colW = `calc((100% - ${totalGap}px) / ${groupCols})`;
       const leftOffset = `calc((100% - ${totalGap}px) / ${groupCols} * ${col} + ${col * GAP}px + 4px)`;
       const widthVal   = `calc((100% - ${totalGap}px) / ${groupCols} - 4px)`;
-      blocksHtml += `<div class="day-event-block"
+      blocksHtml += `<div class="day-event-block${e.completed ? ' completed' : ''}"
         style="top:${top}px;height:${height}px;background:${colMap[e.color||0]};
-               left:${leftOffset};width:${widthVal};"
+               left:${leftOffset};width:${widthVal};${e.completed ? 'opacity:.55;' : ''}"
         onclick="viewEvent('${e.id}');event.stopPropagation()">
-        <div class="deb-title">${esc(e.title)}</div>
+        <div class="deb-title" style="${e.completed ? 'text-decoration:line-through;opacity:.8;' : ''}">${esc(e.title)}</div>
         <div class="deb-time">${esc(e.time)}${e.timeEnd?' – '+esc(e.timeEnd):''} Uhr</div>
         ${e.note ? `<div class="deb-note">${esc(e.note)}</div>` : ''}
       </div>`;
@@ -1311,8 +1315,8 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     const alldayHtml = (untimedEvs.length || holName || dSchHol) ? `<div class="day-allday-area">
       <span class="day-allday-label">Ganztägig</span>
       ${holHtml}${schHolHtml}
-      ${untimedEvs.map(e=>`<div class="cal-event-pill"
-        style="position:static;background:${colMap[e.color||0]}"
+      ${untimedEvs.map(e=>`<div class="cal-event-pill${e.completed ? ' completed' : ''}"
+        style="position:static;background:${colMap[e.color||0]};${e.completed ? 'opacity:.55;text-decoration:line-through;' : ''}"
         onclick="viewEvent('${e.id}')">${esc(e.title)}</div>`).join('')}
     </div>` : '';
 
@@ -1415,16 +1419,16 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
         const leftPct  = col * (100 / groupCols);
         const widthPct = 100 / groupCols;
 
-        return `<div class="week-event-block"
+        return `<div class="week-event-block${e.completed ? ' completed' : ''}"
           style="position:absolute;
                  top:${top}px;
                  height:${height}px;
                  background:${colMap[e.color||0]};
                  left:calc(${leftPct}% + ${col > 0 ? GAP : 0}px);
                  width:calc(${widthPct}% - ${col > 0 ? GAP : 1}px);
-                 pointer-events:auto;"
+                 pointer-events:auto;${e.completed ? 'opacity:.55;' : ''}"
           onclick="viewEvent('${e.id}');event.stopPropagation()">
-          <div class="web-title">${esc(e.title)}</div>
+          <div class="web-title" style="${e.completed ? 'text-decoration:line-through;' : ''}">${esc(e.title)}</div>
           <div class="web-time">${esc(e.time)}${e.timeEnd?' – '+esc(e.timeEnd):''}</div>
         </div>`;
       }).join('');
