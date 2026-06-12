@@ -539,7 +539,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       <!-- Kalender-Selektor -->
       <div class="cal-selector-wrap">
         <div class="cal-dropdown" id="cal-dropdown">
-          <div class="cal-dropdown-btn" onclick="toggleCalDropdown()">
+          <div class="cal-dropdown-btn" onclick="toggleCalDropdown(event)">
             <span class="cal-dot" id="active-cal-dot" style="background:#6c63ff"></span>
             <span id="active-cal-name">Mein Kalender</span>
             <span class="chevron">▾</span>
@@ -547,7 +547,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
           <div class="cal-dropdown-menu" id="cal-dropdown-menu">
             <div id="cal-menu-list"></div>
             <hr class="cal-menu-divider">
-            <div class="cal-add-btn" onclick="openAddCalendarModal()">＋ Neuer Kalender</div>
+            <div class="cal-add-btn" onclick="event.stopPropagation();openAddCalendarModal()">＋ Neuer Kalender</div>
           </div>
         </div>
       </div>
@@ -1407,7 +1407,8 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       blocksHtml += `<div class="day-event-block${e.completed ? ' completed' : ''}"
         style="top:${top}px;height:${height}px;background:${evColor(e)};
                left:${leftOffset};width:${widthVal};${e.completed ? 'opacity:.55;' : ''}"
-        onclick="viewEvent('${e.id}');event.stopPropagation()">
+        onclick="viewEvent('${e.id}');event.stopPropagation()"
+        ontouchend="viewEvent('${e.id}');event.stopPropagation();event.preventDefault()">>
         <div class="deb-title" style="${e.completed ? 'text-decoration:line-through;opacity:.8;' : ''}">${esc(e.title)}</div>
         <div class="deb-time">${esc(e.time)}${e.timeEnd?' – '+esc(e.timeEnd):''} Uhr</div>
         ${e.note ? `<div class="deb-note">${esc(e.note)}</div>` : ''}
@@ -1539,7 +1540,8 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
                  left:calc(${leftPct}% + ${col > 0 ? GAP : 0}px);
                  width:calc(${widthPct}% - ${col > 0 ? GAP : 1}px);
                  pointer-events:auto;${e.completed ? 'opacity:.55;' : ''}"
-          onclick="viewEvent('${e.id}');event.stopPropagation()">
+          onclick="viewEvent('${e.id}');event.stopPropagation()"
+          ontouchend="viewEvent('${e.id}');event.stopPropagation();event.preventDefault()">
           <div class="web-title" style="${e.completed ? 'text-decoration:line-through;' : ''}">${esc(e.title)}</div>
           <div class="web-time">${esc(e.time)}${e.timeEnd?' – '+esc(e.timeEnd):''}</div>
         </div>`;
@@ -1590,7 +1592,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
       const ferienBg = wSchHolCol ? 'background:rgba(67,232,216,0.05);' : '';
       dayCols += `<div style="flex:1;min-width:0;position:relative;${ferienBg}">
         ${slots}
-        <div style="position:absolute;inset:0;pointer-events:none;">${blocks}</div>
+        <div style="position:absolute;inset:0;pointer-events:none;" class="week-blocks-layer">${blocks}</div>
       </div>`;
     });
 
@@ -1624,6 +1626,9 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
 
     // Inject current-time line with correct pixel offset after layout
     setTimeout(()=>{
+      // Fix pointer-events so week event blocks are clickable
+      document.querySelectorAll('.week-blocks-layer').forEach(l => l.style.pointerEvents = 'none');
+      document.querySelectorAll('.week-event-block').forEach(b => b.style.pointerEvents = 'auto');
       const marker = document.getElementById('week-now-marker');
       if (marker) {
         const dayIdx = parseInt(marker.dataset.day);
@@ -2241,11 +2246,12 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     });
   }
 
-  window.toggleCalDropdown = function() {
+  window.toggleCalDropdown = function(e) {
+    if (e) e.stopPropagation();
     document.getElementById('cal-dropdown-menu').classList.toggle('open');
   };
-  // Schließen bei Klick außerhalb
-  document.addEventListener('click', e => {
+  // Schließen bei Klick außerhalb — mousedown verhindert Race mit onclick-Handlern
+  document.addEventListener('mousedown', e => {
     const dd = document.getElementById('cal-dropdown');
     if (dd && !dd.contains(e.target)) {
       document.getElementById('cal-dropdown-menu')?.classList.remove('open');
@@ -2651,8 +2657,10 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
 
     if (!_longPressActive || !_dragGhost) {
       // Short tap → open event (was not a drag)
+      const id = _dragEventId;
       _longPressActive = false;
       _dragEventId = null;
+      if (id) viewEvent(id);
       return;
     }
 
