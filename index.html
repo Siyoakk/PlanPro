@@ -682,12 +682,18 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
         <!-- Eigene Kategorien -->
         <div class="settings-card">
           <h3>🏷️ Eigene Kategorien</h3>
-          <p style="font-size:.78rem;color:var(--text3);margin-bottom:14px">Kategorien sind für alle deine Termine nutzbar.</p>
+          <p style="font-size:.78rem;color:var(--text3);margin-bottom:14px">Kategorien sind für alle deine Termine nutzbar. Klicke auf den Farbkreis zum Ändern.</p>
           <div class="cat-list" id="cat-list"></div>
-          <div class="cat-add-row">
-            <input type="color" id="cat-color-pick" value="#6c63ff" style="width:36px;height:36px;border:none;background:none;cursor:pointer;padding:0;border-radius:6px;">
-            <input type="text" id="cat-name-input" placeholder="Kategoriename …" maxlength="32" onkeydown="if(event.key==='Enter')addCustomCategory()">
-            <button class="btn btn-primary" style="padding:8px 14px;font-size:.82rem;white-space:nowrap" onclick="addCustomCategory()">＋ Hinzufügen</button>
+          <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:14px">
+            <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:8px">Neue Kategorie</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="color" id="cat-color-pick" value="#6c63ff"
+                style="width:38px;height:38px;border:2px solid var(--border);background:none;cursor:pointer;padding:2px;border-radius:8px;flex-shrink:0;">
+              <input type="text" id="cat-name-input" placeholder="Kategoriename …" maxlength="32"
+                style="flex:1;min-width:0;"
+                onkeydown="if(event.key==='Enter')addCustomCategory()">
+              <button class="btn btn-primary" style="flex-shrink:0;padding:8px 14px;font-size:.84rem" onclick="addCustomCategory()">＋ Hinzufügen</button>
+            </div>
           </div>
         </div>
 
@@ -831,6 +837,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
   function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
   function openModal() { document.getElementById('modal-overlay').classList.add('open'); }
   window.closeModal = closeModal;
+  window.openModal = openModal;
   document.getElementById('modal-overlay').addEventListener('click', (e) => { if (e.target === document.getElementById('modal-overlay')) closeModal(); });
   function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebar-overlay').classList.remove('open'); }
   function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('sidebar-overlay').classList.add('open'); }
@@ -1115,6 +1122,7 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
     if (page === 'calendar')  renderCalendar();
     if (page === 'bookings')  renderBookings();
     if (page === 'users')     renderUsers();
+    if (page === 'settings')  { renderCategoryList(); updateRgbPreview(); }
   };
 
   // ---------- DASHBOARD ----------
@@ -2350,12 +2358,22 @@ tr.completed td { opacity:0.6; filter:grayscale(0.3); text-decoration:line-throu
   function renderCategoryList() {
     const list = document.getElementById('cat-list');
     if (!list) return;
+    if (!userCategories.length) {
+      list.innerHTML = '<p style="color:var(--text3);font-size:.82rem;font-style:italic;padding:8px 0">Keine Kategorien vorhanden.</p>';
+      return;
+    }
     list.innerHTML = userCategories.map((c, i) => `
       <div class="cat-item">
-        <input type="color" class="cat-dot" value="${c.color}" title="Farbe ändern"
-          onchange="updateCategoryColor(${i}, this.value)" style="background:${c.color};border:none;width:22px;height:22px;border-radius:50%;cursor:pointer;padding:0;">
-        <span class="cat-name">${esc(c.name)}</span>
-        <button class="cat-del" onclick="deleteCategory(${i})" title="Löschen">🗑️</button>
+        <input type="color" value="${c.color}" title="Farbe ändern"
+          onchange="updateCategoryColor(${i}, this.value)"
+          style="width:24px;height:24px;border:2px solid rgba(255,255,255,.15);background:${c.color};cursor:pointer;padding:0;border-radius:50%;flex-shrink:0;">
+        <span class="cat-name" style="flex:1;font-size:.88rem;font-weight:500">${esc(c.name)}</span>
+        <button onclick="deleteCategory(${i})" title="Löschen"
+          style="background:none;border:1px solid transparent;border-radius:6px;padding:4px 8px;cursor:pointer;color:var(--text3);font-size:.8rem;transition:all .15s"
+          onmouseover="this.style.color='var(--accent2)';this.style.borderColor='var(--accent2)';this.style.background='rgba(255,101,132,.1)'"
+          onmouseout="this.style.color='var(--text3)';this.style.borderColor='transparent';this.style.background='none'">
+          🗑️ Löschen
+        </button>
       </div>`).join('');
   }
 
